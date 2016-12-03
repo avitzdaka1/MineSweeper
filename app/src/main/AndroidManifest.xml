@@ -17,6 +17,10 @@
         </activity>
         <activity android:name=".ui.HelpActivity">
         </activity>
+        <activity android:name=".ui.GameActivity">
+        </activity>
+        <activity android:name=".ui.OutcomeActivity">
+        </activity>
     </application>
 
 </manifest>
