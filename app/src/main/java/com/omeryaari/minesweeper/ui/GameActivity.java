@@ -18,34 +18,35 @@ public class GameActivity extends AppCompatActivity {
     private Logic gameLogic;
     private ImageButton[][] gameButtons;
     private GridLayout boardGrid;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ActionBar actionBar = getSupportActionBar();
         actionBar.hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
-        TextView text = (TextView)this.findViewById(R.id.fuck);
-        text.setGravity(Gravity.CENTER);
-        text.setTextSize(30);
         Bundle b = getIntent().getExtras();
-        int level = b.getInt("key");
-        switch (level) {
-            case 0: {
-                text.setText("Easy");
-                break;
-            }
-            case 1: {
-                text.setText("Normal");
-                break;
-            }
-            case 2: {
-                text.setText("Hard");
-                break;
+        int difficulty = b.getInt("key");
+        gameLogic = new Logic(difficulty);
+        boardGrid = new GridLayout(this);
+        boardGrid.setColumnCount(gameLogic.getSize());
+        boardGrid.setRowCount(gameLogic.getSize());
+        //boardGrid.set
+        gameButtons = new ImageButton[gameLogic.getSize()][gameLogic.getSize()];
+        createImageButtons();
+        setContentView(boardGrid);
+    }
+
+    private void createImageButtons() {
+        for (int row = 0; row < gameButtons.length; row++) {
+            for (int col = 0; col < gameButtons[0].length; col++) {
+                gameButtons[row][col] = new ImageButton(this);
+                boardGrid.addView(gameButtons[row][col]);
             }
         }
     }
 
-    public void drawBoard() {
-
+    private void drawBoard() {
+        int[][] intBoard = gameLogic.getIntBoard();
     }
 }
