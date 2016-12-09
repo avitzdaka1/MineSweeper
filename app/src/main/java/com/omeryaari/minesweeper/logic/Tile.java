@@ -1,6 +1,7 @@
 package com.omeryaari.minesweeper.logic;
 
 public class Tile {
+    public static final int TILE_MINE = 10;
     private int value;
     private boolean flagged;
     private boolean visible;
@@ -19,7 +20,8 @@ public class Tile {
     }
 
     public void setValue(int value) {
-        this.value = value;
+        if (this.value != TILE_MINE)
+            this.value = value;
     }
 
     public boolean isFlagged() {

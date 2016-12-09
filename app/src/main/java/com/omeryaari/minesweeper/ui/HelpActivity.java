@@ -16,7 +16,7 @@ public class HelpActivity extends AppCompatActivity {
         actionBar.hide();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help);
-        returnButton = (Button)findViewById(R.id.returnButton);
+        returnButton = (Button)findViewById(R.id.return_button);
         returnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

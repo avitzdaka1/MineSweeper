@@ -2,11 +2,15 @@
     <string name="app_name">MineSweeper</string>
     <string name="help_activity_title">Help</string>
     <string name="help_activity_text1">Please use the button below the game board to switch between the Mine</string>
-    <string name="help_activity_text2">to reveal tiles, and the Flag</string>
-    <string name="help_activity_text3">to flag suspected tiles.</string>
+    <string name="help_activity_text2">to reveal tiles,</string>
+    <string name="help_activity_text3">and the Flag</string>
+    <string name="help_activity_text4">to flag suspected tiles.</string>
     <string name="helpReturn">Main Menu</string>
     <string name="highScoresNumberSign">#</string>
     <string name="highScoresName">Name</string>
     <string name="highScoresTime">Time</string>
+    <string name="time_text">Time elapsed: </string>
+    <string name="mines_left_text">Mines left: </string>
+    <string name="timer_first_value">00:00</string>
 
 </resources>
