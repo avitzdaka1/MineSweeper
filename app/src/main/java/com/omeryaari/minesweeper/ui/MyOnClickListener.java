@@ -11,6 +11,15 @@ public class MyOnClickListener implements View.OnClickListener {
     public static final int TILE_EMPTY = 0;
     public static final int TILE_FLAG = 9;
     public static final int TILE_MINE = 10;
+    public static final int TILE_ONE = 1;
+    public static final int TILE_TWO = 2;
+    public static final int TILE_THREE = 3;
+    public static final int TILE_FOUR = 4;
+    public static final int TILE_FIVE = 5;
+    public static final int TILE_SIX = 6;
+    public static final int TILE_SEVEN = 7;
+    public static final int TILE_EIGHT = 8;
+    public static final int TILE_DEFAULT_PADDING = 10;
     private int row;
     private int col;
     private Logic gameLogic;
@@ -25,7 +34,7 @@ public class MyOnClickListener implements View.OnClickListener {
     public void onClick(View v) {
         ImageButton thisButton = (ImageButton) v;
         thisButton.setScaleType(ImageButton.ScaleType.FIT_CENTER);
-        thisButton.setPadding(10,10,10,10);
+        thisButton.setPadding(TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING);
         int value = gameLogic.checkTile(row, col);
         switch(value) {
             case TILE_EMPTY: {
@@ -40,35 +49,35 @@ public class MyOnClickListener implements View.OnClickListener {
                 thisButton.setImageResource(R.drawable.mine);
                 break;
             }
-            case 1: {
+            case TILE_ONE: {
                 thisButton.setImageResource(R.drawable.one);
                 break;
             }
-            case 2: {
+            case TILE_TWO: {
                 thisButton.setImageResource(R.drawable.two);
                 break;
             }
-            case 3: {
+            case TILE_THREE: {
                 thisButton.setImageResource(R.drawable.three);
                 break;
             }
-            case 4: {
+            case TILE_FOUR: {
                 thisButton.setImageResource(R.drawable.four);
                 break;
             }
-            case 5: {
+            case TILE_FIVE: {
                 thisButton.setImageResource(R.drawable.five);
                 break;
             }
-            case 6: {
+            case TILE_SIX: {
                 thisButton.setImageResource(R.drawable.six);
                 break;
             }
-            case 7: {
+            case TILE_SEVEN: {
                 thisButton.setImageResource(R.drawable.seven);
                 break;
             }
-            case 8: {
+            case TILE_EIGHT: {
                 thisButton.setImageResource(R.drawable.eight);
                 break;
             }

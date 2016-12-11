@@ -1,7 +1,5 @@
 package com.omeryaari.minesweeper.logic;
 
-import android.util.Log;
-
 import java.util.Random;
 
 public class Logic {
@@ -26,7 +24,7 @@ public class Logic {
     //  Finals used for in the TimerTask.
     public static final int MILLISECONDS_IN_SECOND = 1000;
     public static final int SECONDS_IN_MINUTE = 60;
-    public static final int UI_DO_NOTHING = -1;
+    public static final int TILE_INVISIBLE = -1;
     //  Game outcomes (win or loss).
     public static final int OUTCOME_LOSS = 0;
     public static final int OUTCOME_WIN = 1;
@@ -41,6 +39,8 @@ public class Logic {
     private int timerMinutes;
     private TimerChangedListener timerListener;
     private RefreshBoardListener refreshListener;
+    private EndGameListener endGameListener;
+    private FlagChangeListener flagChangeListener;
 
     public Logic(int difficulty) {
         this.difficulty = difficulty;
@@ -75,47 +75,64 @@ public class Logic {
     public int checkTile(int row, int col) {
         Tile tempTile = logicBoard[row][col];
         int value = tempTile.getValue();
-        ////  If tile is already visible, return tell the UI to do nothing.
-       // if (tempTile.isVisible())
-       //     return TILE_NOT_VISIBLE;
         //  If the click type is mine.
-        if (clickType == CLICK_TYPE_MINE) {
-                switch (value) {
-                    case TILE_EMPTY: {
-                        if (!tempTile.isVisible()) {
-                            unveilBlanksAndNumbers(row, col);
-                            refreshListener.refreshBoard();
+            if (clickType == CLICK_TYPE_MINE) {
+                if (tempTile.isFlagged())
+                    value = TILE_FLAG;
+                else {
+                    switch (value) {
+                        case TILE_EMPTY: {
+                            if (!tempTile.isVisible()) {
+                                unveilBlanksAndNumbers(row, col);
+                                refreshListener.refreshBoard();
+                            }
+                            break;
                         }
-                        break;
+                        case TILE_MINE: {
+                            endGameListener.onEndGame(OUTCOME_LOSS);
+                            break;
+                        }
+                        default:
+                            break;
                     }
-                    case TILE_MINE: {
-                        endGame(OUTCOME_LOSS);
-                        break;
-                    }
-                    default:
-                        break;
+                    tempTile.unveil();
                 }
-            tempTile.unveil();
-        }
+            }
         //  If the click type is flag.
-        else if (clickType == CLICK_TYPE_FLAG) {
+        if (clickType == CLICK_TYPE_FLAG) {
             if (!tempTile.isVisible()) {
                 if (tempTile.isFlagged()) {
                     tempTile.unFlag();
                     flagsCount--;
-                    value = UI_DO_NOTHING;
+                    value = TILE_INVISIBLE;
+                    flagChangeListener.flagChange();
                 }
                 else {
-                    tempTile.flag();
-                    flagsCount++;
-                    if (flagsCount == numOfMines) {
-                        //  TODO:   Check if all mines are flagged for victory.
+                    if (flagsCount < numOfMines) {
+                        tempTile.flag();
+                        flagsCount++;
+                        value = TILE_FLAG;
+                        flagChangeListener.flagChange();
                     }
-                    value = TILE_FLAG;
+                    else
+                        value = TILE_INVISIBLE;
                 }
             }
         }
+        checkVictory();
         return value;
+    }
+
+    private void checkVictory() {
+        int minesFlagged = 0;
+        for(int row = 0; row < logicBoard.length; row++) {
+            for(int col = 0; col < logicBoard[0].length; col++) {
+                if (logicBoard[row][col].getValue() == TILE_MINE && logicBoard[row][col].isFlagged())
+                    minesFlagged++;
+            }
+        }
+        if (minesFlagged == numOfMines)
+            endGameListener.onEndGame(OUTCOME_WIN);
     }
 
     public int[][] getIntBoard() {
@@ -125,14 +142,10 @@ public class Logic {
                 if (logicBoard[row][col].isVisible())
                     intBoard[row][col] = logicBoard[row][col].getValue();
                 else
-                    intBoard[row][col] = UI_DO_NOTHING;
+                    intBoard[row][col] = TILE_INVISIBLE;
             }
         }
         return intBoard;
-    }
-
-    private void endGame(int outcome) {
-
     }
 
     //  Initializes the game, logic wise.
@@ -214,6 +227,7 @@ public class Logic {
         }
     }
 
+    //  Timer task.
     private class TimerTask implements Runnable {
         @Override
         public void run() {
@@ -238,23 +252,42 @@ public class Logic {
         }
     }
 
+    //  Returns number of minutes from the timer.
     public int getMinutes() {
         return timerMinutes;
     }
 
+    //  Returns number of seconds from the timer.
     public int getSeconds() {
         return timerSeconds;
     }
 
+    //  Returns number of mines minus the flags count.
+    public int getMinesLeft() {
+        return numOfMines - flagsCount;
+    }
+
+    //  Sets the click type to either Mine or Flag.
     public void setClickType(int clickType) {
         this.clickType = clickType;
     }
 
+    //  Sets the timer listener (which is actually the GameActivity).
     public void setTimerListener(TimerChangedListener timerListener) {
         this.timerListener = timerListener;
     }
-
+    //  Sets the refresh board listener (which is actually the GameActivity).
     public void setRefreshBoardListener(RefreshBoardListener refreshListener) {
         this.refreshListener = refreshListener;
+    }
+    //  Sets the end game listener (which is actually the GameActivity).
+    public void setEndGameListener(EndGameListener endGameListener) {
+        this.endGameListener = endGameListener;
+    }
+
+    //  Sets the flag change listener (which is actually the GameActivity).
+    public void setFlagChangeListener(FlagChangeListener flagChangeListener) {
+        this.flagChangeListener = flagChangeListener;
+        flagChangeListener.flagChange();
     }
 }
