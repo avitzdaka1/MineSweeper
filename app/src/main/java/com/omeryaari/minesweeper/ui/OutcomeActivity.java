@@ -1,29 +1,38 @@
 package com.omeryaari.minesweeper.ui;
 
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.omeryaari.minesweeper.R;
+import com.omeryaari.minesweeper.logic.Highscore;
+import com.omeryaari.minesweeper.logic.Logic;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class OutcomeActivity extends AppCompatActivity {
 
-    public static final int OUTCOME_WIN = 1;
+    private final String TAG = this.getClass().getSimpleName();
     private TextView outcomeText;
     private Button saveButton;
     private EditText saveName;
-    private int minutes;
-    private int seconds;
     private int difficulty;
-    String highscoreName;
-    int highscore;
+    private String level;
+    private Highscore highscore;
+    private ArrayList<Highscore> highscoreList = new ArrayList<>();;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,29 +43,30 @@ public class OutcomeActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Bundle b = getIntent().getExtras();
         int outcome = b.getInt("outcome");
-        minutes = b.getInt("minutes");
-        seconds = b.getInt("seconds");
+        int minutes = b.getInt("minutes");
+        int seconds = b.getInt("seconds");
         difficulty = b.getInt("difficulty");
         outcomeText = (TextView) findViewById(R.id.outcome_text_view);
         saveButton = (Button) findViewById(R.id.save_score_button);
         outcomeText.setBackgroundResource(R.drawable.outcome_cell);
-        loadScore();
-        if (outcome == OUTCOME_WIN) {
+        loadScores();
+        highscore = new Highscore();
+        highscore.setMinutes(minutes);
+        highscore.setSeconds(seconds);
+        if (outcome == Logic.OUTCOME_WIN) {
             outcomeText.setText(R.string.win_text);
-            if (checkHighScore(highscore, minutes, seconds))
+            if (isNewHighscore())
                 winNewHighscoreCodeSequence();
             else
                 winNoHighscoreCodeSequence();
         }
         else
             lossCodeSequence();
-        setBestTime();
         setTimePlayed();
     }
 
     //  Runs if the player has won and made a high score.
     private void winNewHighscoreCodeSequence() {
-        highscore = (minutes * 100) + seconds;
         LinearLayout saveNameLayout = (LinearLayout)findViewById(R.id.save_name_layout);
         saveName = new EditText(this);
         saveName.setHint(R.string.name_edit_text);
@@ -67,7 +77,7 @@ public class OutcomeActivity extends AppCompatActivity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                highscoreName = saveName.getText().toString();
+                highscore.setName(saveName.getText().toString());
                 saveScore();
                 OutcomeActivity.this.finish();
             }
@@ -96,69 +106,79 @@ public class OutcomeActivity extends AppCompatActivity {
             }
         });
     }
-
+/*
     //  Sets the time in the best time text view to the highscore time.
     private void setBestTime() {
-        TextView bestTimeText = (TextView) findViewById(R.id.best_time_text_view2);
-        bestTimeText.setText(getCorrectedTimeString(highscore / 100, highscore % 100));
-        if (highscore == -1) {
-            TextView bestTime = (TextView) findViewById(R.id.best_time_text_view1);
-            bestTime.setText("");
-            bestTimeText.setText("");
+        if (this.highscoreList.size() > 0) {
+            TextView bestTimeText = (TextView) findViewById(R.id.best_time_text_view1);
+            bestTimeText.setText(R.string.best_time_text);
+            TextView bestTimeTextValue = (TextView) findViewById(R.id.best_time_text_view2);
+            Highscore tempHighScore = this.highscoreList.get(0);
+            bestTimeTextValue.setText(tempHighScore.getCorrectedTimeString());
         }
     }
-
+*/
     //  Sets the time in the time played TextView to the time the player played.
     private void setTimePlayed() {
         TextView timePlayedText = (TextView) findViewById(R.id.time_played_text_view2);
-        timePlayedText.setText(getCorrectedTimeString(minutes, seconds));
+        timePlayedText.setText(highscore.getCorrectedTimeString());
     }
 
     //  Saves score.
     private void saveScore() {
-        SharedPreferences scoresPref = getSharedPreferences("scores", MODE_PRIVATE);
-        SharedPreferences.Editor scoresPrefEditor = scoresPref.edit();
-        scoresPrefEditor.putString("player" + difficulty + "name", highscoreName);
-        scoresPrefEditor.putInt("player" + difficulty + "score", highscore);
-        scoresPrefEditor.apply();
-    }
-
-    //  Loads current level's score.
-    private void loadScore() {
-        SharedPreferences scoresPref = getSharedPreferences("scores", MODE_PRIVATE);
-        highscoreName = scoresPref.getString("player" + difficulty + "name", null);
-        highscore = scoresPref.getInt("player" + difficulty + "score", -1);
-    }
-
-    //  Generates "time strings"
-    private String getCorrectedTimeString(int minutes, int seconds) {
-        String time;
-        if (minutes < 10) {
-            if (seconds < 10)
-                time = ("0" + minutes + ":0" + seconds);
-            else
-                time = ("0" + minutes + ":" + seconds);
+        DatabaseReference highscoresDB = FirebaseDatabase.getInstance().getReference();
+        //  TODO save location into highscore.
+        highscore.setLatitude(0);
+        highscore.setLongitude(0);
+        highscoreList.add(highscore);
+        //  If this highscore isn't the first highscore.
+        if (highscoreList.size() > Highscore.MAX_HIGHSCORES) {
+            Collections.sort(highscoreList);
+            //  Remove the last highscore that isn't a highscore anymore.
+            highscoresDB.child("Highscores").child(level).child("List").child(highscoreList.get(highscoreList.size()-1).getFirebaseKey()).removeValue();
+            highscoreList.remove(highscoreList.size() - 1);
         }
-        else {
-            if (seconds < 10)
-                time = (minutes + ":0" + seconds);
-            else
-                time = (minutes + ":" + seconds);
-        }
-        return time;
+        highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
+        highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
     }
 
-    //  Checks if current score is a high score.
-    private boolean checkHighScore(int highScore, int minutes, int seconds) {
-        if (highScore == -1)
-            return true;
-        int highScoreMinutes = highScore / 100;
-        int highScoreSeconds = highScore % 100;
-        if (minutes < highScoreMinutes)
-            return true;
-        else if (minutes == highScoreMinutes && seconds < highScoreSeconds)
+    public String determineLevel(int level) {
+        switch (level) {
+            case 0:
+                return "Easy";
+            case 1:
+                return "Normal";
+            case 2:
+                return "Hard";
+        }
+        return "";
+    }
+
+    //  Loads high scores from firebase.
+    private void loadScores() {
+        level = determineLevel(difficulty);
+        DatabaseReference highscoresDB = FirebaseDatabase.getInstance().getReference();
+        highscoresDB.child("Highscores").child(level).child("List").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot snap: dataSnapshot.getChildren()) {
+                    Highscore tempHighScore = snap.getValue(Highscore.class);
+                    highscoreList.add(tempHighScore);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d(TAG, "Error loading scores from firebase (onCancalled was called).");
+            }
+        });
+    }
+
+    //  Checks if the current score is a highscore.
+    private boolean isNewHighscore() {
+        if (highscoreList.size() < Highscore.MAX_HIGHSCORES)
             return true;
         else
-            return false;
+            return highscore.compareTo(highscoreList.get(highscoreList.size() - 1)) == 1;
     }
 }

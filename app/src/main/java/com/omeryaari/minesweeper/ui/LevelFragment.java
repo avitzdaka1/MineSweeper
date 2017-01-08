@@ -1,21 +1,15 @@
 package com.omeryaari.minesweeper.ui;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.omeryaari.minesweeper.R;
-
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class LevelFragment extends Fragment {
 
@@ -26,9 +20,9 @@ public class LevelFragment extends Fragment {
     public static final int NO_SCORE = -1;
     public static final int HIGHSCORE_TEXT_SIZE = 15;
     public static final int HIGHSCORE_TABLE_SIZE = 4;
-    private String title;
     private int position;
     private int highScore;
+    private String title;
     private String playerName;
 
     public static LevelFragment newInstance(String title, int position) {
@@ -43,13 +37,13 @@ public class LevelFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        position = getArguments().getInt("position", 0);
+        position = getArguments().getInt("position");
         title = getArguments().getString("title");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.level_fragment, container, false);
+        View view = inflater.inflate(R.layout.fragment_menu_level, container, false);
         TextView levelText = (TextView) view.findViewById(R.id.levelTextXML);
         levelText.setText(title);
         ImageButton gameStart = (ImageButton) view.findViewById(R.id.playImageButton);
@@ -63,64 +57,18 @@ public class LevelFragment extends Fragment {
                 startActivity(intent);
             }
         });
-        return view;
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        updateScores();
-    }
-
-    //  Updates the textviews that show the highscore in every fragment.
-    public void updateScores() {
-        loadScore();
-        DisplayMetrics metrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-        int cellWidth = (metrics.widthPixels - (metrics.widthPixels / 5)) / 2;
-        TextView[] textViews = new TextView[4];
-        textViews[TEMPLATE_NAME] = (TextView) getView().findViewById(R.id.template_name);
-        textViews[TEMPLATE_TIME] = (TextView) getView().findViewById(R.id.template_time);
-        textViews[HIGHSCORE_NAME] = (TextView) getView().findViewById(R.id.highscore_name);
-        textViews[HIGHSCORE_TIME] = (TextView) getView().findViewById(R.id.highscore_time);
-        if (highScore != NO_SCORE) {
-            fillTextViews(textViews, cellWidth);
-        }
-    }
-
-    //  Loads current level's score.
-    private void loadScore() {
-        int difficulty = position;
-        SharedPreferences scoresPref = this.getActivity().getSharedPreferences("scores", MODE_PRIVATE);
-        playerName = scoresPref.getString("player" + difficulty + "name", null);
-        highScore = scoresPref.getInt("player" + difficulty + "score", -1);
-    }
-
-    private void fillTextViews(TextView[] textViews, int cellWidth) {
-        for(int i = 0; i < HIGHSCORE_TABLE_SIZE; i++) {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            params.width = cellWidth;
-            params.height = cellWidth / 3;
-            params.weight = 1;
-            textViews[i].setLayoutParams(params);
-            switch (i) {
-                case TEMPLATE_NAME:
-                    textViews[i].setText(getString(R.string.highScoresName));
-                    break;
-                case TEMPLATE_TIME:
-                    textViews[i].setText(getString(R.string.highScoresTime));
-                    break;
-                case HIGHSCORE_NAME:
-                    textViews[i].setText(playerName);
-                    break;
-                case HIGHSCORE_TIME:
-                    generateTimeString(textViews[i]);
-                    break;
+        Button highscoresButton = (Button) view.findViewById(R.id.level_fragment_highscores_button);
+        highscoresButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), HighscoreActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("key", position);
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
-            textViews[i].setGravity(Gravity.CENTER);
-            textViews[i].setTextSize(HIGHSCORE_TEXT_SIZE);
-            textViews[i].setBackgroundResource(R.drawable.cell_shape);
-        }
+        });
+        return view;
     }
 
     private void generateTimeString(TextView textView) {

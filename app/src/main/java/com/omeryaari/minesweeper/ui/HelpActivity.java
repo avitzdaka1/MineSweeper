@@ -10,7 +10,7 @@ import android.widget.Button;
 import com.omeryaari.minesweeper.R;
 
 public class HelpActivity extends AppCompatActivity {
-    Button returnButton;
+    private Button returnButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ActionBar actionBar = getSupportActionBar();

@@ -68,7 +68,6 @@
             android:layout_height="wrap_content"
             android:textSize="20sp"
             android:textColor="@android:color/black"
-            android:text="@string/best_time_text"
             android:layout_marginEnd="10dp"/>
 
         <TextView

@@ -22,14 +22,12 @@ public class Logic {
     public static final int CLICK_TYPE_MINE = 0;
     public static final int CLICK_TYPE_FLAG = 1;
     //  Finals used for in the TimerTask.
-    public static final int MILLISECONDS_IN_SECOND = 1000;
+    public static final int TIMER_SLEEP_TIME = 1000;
     public static final int SECONDS_IN_MINUTE = 60;
     public static final int TILE_INVISIBLE = -1;
     //  Game outcomes (win or loss).
     public static final int OUTCOME_LOSS = 0;
     public static final int OUTCOME_WIN = 1;
-    private final String TAG = Logic.class.getSimpleName();
-
     private Tile[][] logicBoard;
     private int numOfMines;
     private int flagsCount;
@@ -53,7 +51,7 @@ public class Logic {
     }
 
     //  Unveils blank and number tiles after a blank tile has been clicked, recursively.
-    public void unveilBlanksAndNumbers(int row, int col) {
+    private void unveilBlanksAndNumbers(int row, int col) {
         Tile tempTile = logicBoard[row][col];
         //  If tile is already visible, do nothing.
         if (tempTile.getValue() != TILE_MINE)
@@ -235,7 +233,7 @@ public class Logic {
             timerMinutes = 0;
             try {
                 while (true) {
-                    Thread.sleep(MILLISECONDS_IN_SECOND);
+                    Thread.sleep(TIMER_SLEEP_TIME);
                     if (timerSeconds < SECONDS_IN_MINUTE-1)
                         timerSeconds++;
                     //  If a minute has passed.

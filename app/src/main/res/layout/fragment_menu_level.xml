@@ -3,7 +3,7 @@
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-                android:id="@+id/fragment_relative_layout">
+                android:id="@+id/fragment__menu_relative_layout">
     <TextView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -51,7 +51,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
     </LinearLayout>
-
     <ImageButton
         android:id="@+id/playImageButton"
         android:layout_width="100dp"
@@ -64,4 +63,12 @@
         android:background="?android:selectableItemBackground"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"/>
+    <Button
+        android:id="@+id/level_fragment_highscores_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Highscores"
+        android:layout_centerHorizontal="true"
+        android:layout_above="@id/playImageButton"
+        android:layout_marginBottom="20dp"/>
 </RelativeLayout>

@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "224485213758",
+    "firebase_url": "https://minesweepercellular.firebaseio.com",
+    "project_id": "minesweepercellular",
+    "storage_bucket": "minesweepercellular.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:224485213758:android:1e4c9243f352e6f6",
+        "android_client_info": {
+          "package_name": "com.omeryaari.minesweeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "224485213758-0ic8ebl93bb2ae9tu6dcpboglb6ejhrj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHIe3rgnWxx61pddeMpUo_Y2krDsrJjXE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

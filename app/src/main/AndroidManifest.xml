@@ -8,6 +8,9 @@
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
+        <meta-data
+            android:name="com.google.android.maps.v2.API_KEY"
+            android:value="AIzaSyCm7tukKclPKU8-RDZpqg8fSLskjQgkX3M"/>
         <activity android:name=".ui.MenuActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -20,6 +23,8 @@
         <activity android:name=".ui.GameActivity">
         </activity>
         <activity android:name=".ui.OutcomeActivity">
+        </activity>
+        <activity android:name=".ui.HighscoreActivity">
         </activity>
     </application>
 

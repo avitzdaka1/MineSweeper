@@ -20,9 +20,7 @@ import com.omeryaari.minesweeper.logic.RefreshBoardListener;
 import com.omeryaari.minesweeper.logic.TimerChangedListener;
 
 public class GameActivity extends AppCompatActivity implements TimerChangedListener, RefreshBoardListener, EndGameListener, FlagChangeListener{
-    public static final int CLICK_TYPE_MINE = 0;
-    public static final int CLICK_TYPE_FLAG = 1;
-    public static final int UI_DO_NOTHING = -1;
+
     private TextView timeText;
     private TextView minesLeftText;
     private ImageButton selectionButton;
@@ -33,7 +31,6 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
     private int buttonSizeParam;
     private int gameSize;
     private int difficulty;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,19 +60,19 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         LinearLayout.LayoutParams selectionButtonParams = new LinearLayout.LayoutParams(buttonSizeParam*2, buttonSizeParam*2);
         selectionButtonParams.gravity = Gravity.CENTER;
         selectionButton.setLayoutParams(selectionButtonParams);
-        clickType = CLICK_TYPE_MINE;
+        clickType = Logic.CLICK_TYPE_MINE;
         selectionButton.setBackgroundResource(R.drawable.mine);
         selectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (clickType == CLICK_TYPE_MINE) {
-                    clickType = CLICK_TYPE_FLAG;
-                    gameLogic.setClickType(CLICK_TYPE_FLAG);
+                if (clickType == Logic.CLICK_TYPE_MINE) {
+                    clickType = Logic.CLICK_TYPE_FLAG;
+                    gameLogic.setClickType(Logic.CLICK_TYPE_FLAG);
                     selectionButton.setBackgroundResource(R.drawable.redflag);
                 }
                 else {
-                    clickType = CLICK_TYPE_MINE;
-                    gameLogic.setClickType(CLICK_TYPE_MINE);
+                    clickType = Logic.CLICK_TYPE_MINE;
+                    gameLogic.setClickType(Logic.CLICK_TYPE_MINE);
                     selectionButton.setBackgroundResource(R.drawable.mine);
                 }
             }
@@ -145,7 +142,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         int[][] gameIntBoard = gameLogic.getIntBoard();
         for(int row = 0; row < gameIntBoard.length; row++) {
             for(int col = 0; col < gameIntBoard.length; col++) {
-                if (gameIntBoard[row][col] != UI_DO_NOTHING) {
+                if (gameIntBoard[row][col] != Logic.TILE_INVISIBLE) {
                     gameButtons[row][col].callOnClick();
                 }
             }

@@ -20,4 +20,12 @@
     <string name="name_edit_text">Enter your name</string>
     <string name="save_name_button">Save</string>
     <string name="save_button_return">Return</string>
+    <string name="highscores_title_textview">Highscores</string>
+    <string name="highscores_table_button_text">Table</string>
+    <string name="highscores_map_button_text">Map</string>
+    <string name="highscores_hashtag_textview">#</string>
+    <string name="highscores_name_textview">Name</string>
+    <string name="highscores_time_textview">Time</string>
+    <string name="highscores_location_textview">Location</string>
+    <string name="highscores_return_button">Return</string>
 </resources>

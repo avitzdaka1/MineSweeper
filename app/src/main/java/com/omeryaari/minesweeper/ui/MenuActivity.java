@@ -13,7 +13,6 @@ import com.omeryaari.minesweeper.R;
 
 public class MenuActivity extends AppCompatActivity {
 
-    private ImageButton helpImage;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         ActionBar actionBar = getSupportActionBar();
@@ -24,7 +23,7 @@ public class MenuActivity extends AppCompatActivity {
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewPager);
         FragmentPagerAdapter adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapterViewPager);
-        helpImage = (ImageButton) findViewById(R.id.helpImage);
+        ImageButton helpImage = (ImageButton) findViewById(R.id.helpImage);
         helpImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -33,7 +32,7 @@ public class MenuActivity extends AppCompatActivity {
         });
     }
 
-    public void startHelpActivity() {
+    private void startHelpActivity() {
         Intent intent = new Intent(MenuActivity.this, HelpActivity.class);
         MenuActivity.this.startActivity(intent);
     }
