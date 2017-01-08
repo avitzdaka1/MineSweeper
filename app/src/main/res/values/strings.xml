@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">MineSweeper</string>
+    <string name="help_activity_title">Help</string>
+    <string name="help_activity_text1">Use the button below the game board to switch between the Mine</string>
+    <string name="help_activity_text2">to reveal tiles,</string>
+    <string name="help_activity_text3">and the Flag</string>
+    <string name="help_activity_text4">to flag suspected tiles.</string>
+    <string name="helpReturn">Main Menu</string>
+    <string name="highScoresNumberSign">#</string>
+    <string name="highScoresName">Name</string>
+    <string name="highScoresTime">Time</string>
+    <string name="time_text">Time elapsed: </string>
+    <string name="mines_left_text">Mines left: </string>
+    <string name="timer_first_value">00:00</string>
+    <string name="win_text">You Won!</string>
+    <string name="loss_text">You Lost! LOSER!</string>
+    <string name="highscore_text">New Highscore!</string>
+    <string name="time_played_text">Time Played: </string>
+    <string name="best_time_text">Best Time: </string>
+    <string name="name_edit_text">Enter your name</string>
+    <string name="save_name_button">Save</string>
+    <string name="save_button_return">Return</string>
+    <string name="highscores_title_textview">Highscores</string>
+    <string name="highscores_table_button_text">Table</string>
+    <string name="highscores_map_button_text">Map</string>
+    <string name="highscores_hashtag_textview">#</string>
+    <string name="highscores_name_textview">Name</string>
+    <string name="highscores_time_textview">Time</string>
+    <string name="highscores_location_textview">Location</string>
+    <string name="highscores_return_button">Return</string>
+</resources>
