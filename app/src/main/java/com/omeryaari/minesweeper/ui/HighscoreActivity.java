@@ -139,6 +139,7 @@ public class HighscoreActivity extends AppCompatActivity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        //
                     }
                 }
             });
