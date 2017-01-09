@@ -4,18 +4,24 @@ import android.app.FragmentTransaction;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -32,10 +38,7 @@ import java.util.Locale;
 public class HighscoreActivity extends AppCompatActivity {
 
     private String level;
-    private LinearLayout fragmentLayout;
     private Fragment tableFragment;
-    private Fragment mapFragment;
-    private DatabaseReference highscoresDB;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
     private final String TAG = this.getClass().getSimpleName();
     private boolean isMap = false;
@@ -49,10 +52,18 @@ public class HighscoreActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         level = determineLevel(getIntent().getExtras().getInt("key"));
         loadScores();
-        TextView highscoresLevel = (TextView) findViewById(R.id.highscores_level_textview);
-        highscoresLevel.setText(level);
-        fragmentLayout = (LinearLayout) findViewById(R.id.highscores_linear_layout);
-        //createMapFragment();
+        ImageView highscoresLevel = (ImageView) findViewById(R.id.highscores_level_imageview);
+        switch(level) {
+            case "Easy":
+                highscoresLevel.setBackgroundResource(R.drawable.level_easy);
+                break;
+            case "Normal":
+                highscoresLevel.setBackgroundResource(R.drawable.level_normal);
+                break;
+            case "Hard":
+                highscoresLevel.setBackgroundResource(R.drawable.level_hard);
+                break;
+        }
         setupButtons();
     }
 
@@ -71,9 +82,9 @@ public class HighscoreActivity extends AppCompatActivity {
 
     //  Sets the two buttons up and assigns listeners to them.
     private void setupButtons() {
-        Button tableButton = (Button) findViewById(R.id.highscores_table_button);
-        Button mapButton = (Button) findViewById(R.id.highscores_map_button);
-        Button returnButton = (Button) findViewById(R.id.highscores_return_button);
+        ImageButton tableButton = (ImageButton) findViewById(R.id.highscores_table_button);
+        ImageButton mapButton = (ImageButton) findViewById(R.id.highscores_map_button);
+        ImageButton returnButton = (ImageButton) findViewById(R.id.highscores_return_button);
         tableButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -135,7 +146,36 @@ public class HighscoreActivity extends AppCompatActivity {
                             googleMap.addMarker(new MarkerOptions().
                                     position(new LatLng(tempScore.getLatitude(), tempScore.getLongitude())).
                                     title("Highscore #" + (i+1)).
-                                    snippet("Name: " + tempScore.getName() /*+ "\n" + "Time: " + tempScore.getCorrectedTimeString() + "\n" + "Address: " + addresses.get(0).getAddressLine(0)*/));
+                                    snippet("Name: " + tempScore.getName() + "\n" + "Time: " + tempScore.getCorrectedTimeString() + "\n" + "Address: " + addresses.get(0).getAddressLine(0)));
+                            googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+
+                                @Override
+                                public View getInfoWindow(Marker arg0) {
+                                    return null;
+                                }
+
+                                @Override
+                                public View getInfoContents(Marker marker) {
+
+                                    LinearLayout info = new LinearLayout(getApplicationContext());
+                                    info.setOrientation(LinearLayout.VERTICAL);
+
+                                    TextView title = new TextView(getApplicationContext());
+                                    title.setTextColor(Color.BLACK);
+                                    title.setGravity(Gravity.CENTER);
+                                    title.setTypeface(null, Typeface.BOLD);
+                                    title.setText(marker.getTitle());
+
+                                    TextView snippet = new TextView(getApplicationContext());
+                                    snippet.setTextColor(Color.GRAY);
+                                    snippet.setText(marker.getSnippet());
+
+                                    info.addView(title);
+                                    info.addView(snippet);
+
+                                    return info;
+                                }
+                            });
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

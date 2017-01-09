@@ -61,7 +61,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         selectionButtonParams.gravity = Gravity.CENTER;
         selectionButton.setLayoutParams(selectionButtonParams);
         clickType = Logic.CLICK_TYPE_MINE;
-        selectionButton.setBackgroundResource(R.drawable.mine);
+        selectionButton.setBackgroundResource(R.drawable.mine3_small);
         selectionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -73,7 +73,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
                 else {
                     clickType = Logic.CLICK_TYPE_MINE;
                     gameLogic.setClickType(Logic.CLICK_TYPE_MINE);
-                    selectionButton.setBackgroundResource(R.drawable.mine);
+                    selectionButton.setBackgroundResource(R.drawable.mine3_small);
                 }
             }
         });

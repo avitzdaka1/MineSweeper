@@ -6,24 +6,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
+import android.widget.ImageView;
 import com.omeryaari.minesweeper.R;
 
 public class LevelFragment extends Fragment {
 
-    public static final int TEMPLATE_NAME = 0;
-    public static final int TEMPLATE_TIME = 1;
-    public static final int HIGHSCORE_NAME = 2;
-    public static final int HIGHSCORE_TIME = 3;
-    public static final int NO_SCORE = -1;
-    public static final int HIGHSCORE_TEXT_SIZE = 15;
-    public static final int HIGHSCORE_TABLE_SIZE = 4;
     private int position;
-    private int highScore;
     private String title;
-    private String playerName;
 
     public static LevelFragment newInstance(String title, int position) {
         LevelFragment fragment = new LevelFragment();
@@ -44,8 +34,18 @@ public class LevelFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_menu_level, container, false);
-        TextView levelText = (TextView) view.findViewById(R.id.levelTextXML);
-        levelText.setText(title);
+        ImageView levelImageView = (ImageView) view.findViewById(R.id.level_image_view) ;
+        switch(title) {
+            case "Easy":
+                levelImageView.setBackgroundResource(R.drawable.level_easy);
+                break;
+            case "Normal":
+                levelImageView.setBackgroundResource(R.drawable.level_normal);
+                break;
+            case "Hard":
+                levelImageView.setBackgroundResource(R.drawable.level_hard);
+                break;
+        }
         ImageButton gameStart = (ImageButton) view.findViewById(R.id.playImageButton);
         gameStart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -57,7 +57,7 @@ public class LevelFragment extends Fragment {
                 startActivity(intent);
             }
         });
-        Button highscoresButton = (Button) view.findViewById(R.id.level_fragment_highscores_button);
+        ImageButton highscoresButton = (ImageButton) view.findViewById(R.id.level_fragment_highscores_button);
         highscoresButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -69,16 +69,5 @@ public class LevelFragment extends Fragment {
             }
         });
         return view;
-    }
-
-    private void generateTimeString(TextView textView) {
-        if (highScore < 10)
-            textView.setText("00:0" + String.valueOf(highScore));
-        else if (highScore < 100)
-            textView.setText("00:" + String.valueOf(highScore));
-        else if (highScore < 1000)
-            textView.setText("0" + String.valueOf(highScore / 100) + ":" + String.valueOf(highScore % 100));
-        else
-            textView.setText(String.valueOf(highScore / 100) + ":" + String.valueOf(highScore % 100));
     }
 }

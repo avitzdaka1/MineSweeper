@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 public class Highscore implements Serializable, Comparable<Highscore> {
     public static final int MAX_HIGHSCORES = 10;
-    public static final int NUM_PROPS = 4;
     private String name;
     private String firebaseKey;
     private int minutes;

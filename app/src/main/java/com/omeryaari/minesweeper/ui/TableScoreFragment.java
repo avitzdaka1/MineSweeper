@@ -3,6 +3,7 @@ package com.omeryaari.minesweeper.ui;
 import android.app.Fragment;
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import com.omeryaari.minesweeper.R;
 import com.omeryaari.minesweeper.logic.Highscore;
@@ -15,16 +16,26 @@ import android.view.ViewGroup;
 import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class TableScoreFragment extends Fragment {
 
     private GridLayout tableGrid;
     private ArrayList<Highscore> highscoreList;
+    private enum TableProps {
+        NUM_OF_PROPS(3), TABLE_FIRST_LINE(0);
+        private int value;
+
+        TableProps(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 
     public void setHighscoreList(ArrayList<Highscore> highscoreList) {
         this.highscoreList = highscoreList;
@@ -51,13 +62,19 @@ public class TableScoreFragment extends Fragment {
     }
 
     private void initTable(int width) {
-        tableGrid.setColumnCount(Highscore.NUM_PROPS);
+        tableGrid.setColumnCount(TableProps.NUM_OF_PROPS.getValue());
         tableGrid.setRowCount(highscoreList.size() + 1);
-        int cellSize = (width-150) / Highscore.NUM_PROPS;
+        int cellSize = (width-150) / 5;
         for(int i = 0; i < highscoreList.size() + 1; i++) {
             for (int j = 0; j < tableGrid.getColumnCount(); j++) {
                 TextView tempTextView = new TextView(getActivity().getApplicationContext());
-                if (i == 0) {
+                LinearLayout tempLayout = new LinearLayout(getActivity().getApplicationContext());
+                LinearLayout.LayoutParams params;
+                params = new LinearLayout.LayoutParams(cellSize, LinearLayout.LayoutParams.WRAP_CONTENT);
+                if (j == 1) {
+                    params = new LinearLayout.LayoutParams(cellSize * 3, LinearLayout.LayoutParams.WRAP_CONTENT);
+                }
+                if (i == TableProps.TABLE_FIRST_LINE.getValue()) {
                     switch (j) {
                         case 0:
                             tempTextView.setText(R.string.highscores_hashtag_textview);
@@ -68,10 +85,8 @@ public class TableScoreFragment extends Fragment {
                         case 2:
                             tempTextView.setText(R.string.highscores_time_textview);
                             break;
-                        case 3:
-                            tempTextView.setText(R.string.highscores_location_textview);
-                            break;
                     }
+                    tempTextView.setTypeface(null, Typeface.BOLD);
                 }
                 else {
                     switch (j) {
@@ -80,27 +95,20 @@ public class TableScoreFragment extends Fragment {
                             break;
                         case 1:
                             String tempName = highscoreList.get(i-1).getName();
-                            if (tempName.length() > 8)
-                                tempName.substring(0, 8);
-                            tempTextView.setText(tempName);
+                            if (tempName.length() > 15)
+                                tempTextView.setText(tempName.substring(0, 15));
+                            else
+                                tempTextView.setText(tempName);
                             break;
                         case 2:
                             tempTextView.setText(highscoreList.get(i-1).getCorrectedTimeString());
                             break;
-                        case 3:
-                            double longitude = highscoreList.get(i-1).getLongitude();
-                            double latitude = highscoreList.get(i-1).getLatitude();
-                            DecimalFormat tempFormat = new DecimalFormat("###.###");
-                            tempTextView.setText(tempFormat.format(longitude) + ", " + tempFormat.format(latitude));
-                            break;
                     }
                 }
-                LinearLayout tempLayout = new LinearLayout(getActivity().getApplicationContext());
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(cellSize, LinearLayout.LayoutParams.WRAP_CONTENT);
                 tempTextView.setTextColor(Color.BLACK);
-                tempTextView.setTextSize(10);
+                tempTextView.setTextSize(16);
                 tempTextView.setLayoutParams(params);
-                //tempTextView.setGravity(Gravity.CENTER);
+                tempTextView.setGravity(Gravity.CENTER);
                 tempTextView.setBackgroundResource(R.drawable.cell_shape);
                 tempLayout.addView(tempTextView);
                 tableGrid.addView(tempLayout);

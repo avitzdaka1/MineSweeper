@@ -2,11 +2,9 @@ package com.omeryaari.minesweeper.ui;
 
 import android.Manifest;
 import android.content.pm.ActivityInfo;
-
-
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -20,11 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.location.Location;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationServices;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,20 +30,23 @@ import com.omeryaari.minesweeper.logic.Logic;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class OutcomeActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class OutcomeActivity extends AppCompatActivity implements LocationListener {
 
     private final String TAG = this.getClass().getSimpleName();
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
+
     private TextView outcomeText;
     private Button saveButton;
     private EditText saveName;
     private int difficulty;
     private String level;
     private Highscore highscore;
-    private GoogleApiClient googleApiClient;
-    private Location currentLocation;
-    private LocationListener locationListener;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
-    ;
+    private Location currentLocation;
+    protected LocationManager locationManager;
+    private boolean isGPSEnabled = false;
+    private boolean isNetworkEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +55,7 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outcome);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getLocation();
         Bundle b = getIntent().getExtras();
         int outcome = b.getInt("outcome");
         int minutes = b.getInt("minutes");
@@ -67,13 +64,6 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
         outcomeText = (TextView) findViewById(R.id.outcome_text_view);
         saveButton = (Button) findViewById(R.id.save_score_button);
         outcomeText.setBackgroundResource(R.drawable.outcome_cell);
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
         loadScores();
         highscore = new Highscore();
         highscore.setMinutes(minutes);
@@ -89,17 +79,49 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
         setTimePlayed();
     }
 
-    @Override
-    protected void onStart() {
-        googleApiClient.connect();
-        super.onStart();
-    }
+    private void getLocation() {
+        try {
+            locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
+            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+            if (!isGPSEnabled && !isNetworkEnabled) {
 
-    @Override
-    protected void onStop() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, locationListener);
-        googleApiClient.disconnect();
-        super.onStop();
+            } else {
+                if (isNetworkEnabled) {
+
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return;
+                    }
+                    locationManager.requestLocationUpdates(
+                            LocationManager.NETWORK_PROVIDER,
+                            MIN_TIME_BW_UPDATES,
+                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+
+                    if (locationManager != null)
+                        currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                }
+
+                if (isGPSEnabled) {
+                    if (currentLocation == null) {
+                        locationManager.requestLocationUpdates(
+                                LocationManager.GPS_PROVIDER,
+                                MIN_TIME_BW_UPDATES,
+                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                        if (locationManager != null)
+                            currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     //  Runs if the player has won and made a high score.
@@ -144,18 +166,6 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
         });
     }
 
-    /*
-        //  Sets the time in the best time text view to the highscore time.
-        private void setBestTime() {
-            if (this.highscoreList.size() > 0) {
-                TextView bestTimeText = (TextView) findViewById(R.id.best_time_text_view1);
-                bestTimeText.setText(R.string.best_time_text);
-                TextView bestTimeTextValue = (TextView) findViewById(R.id.best_time_text_view2);
-                Highscore tempHighScore = this.highscoreList.get(0);
-                bestTimeTextValue.setText(tempHighScore.getCorrectedTimeString());
-            }
-        }
-    */
     //  Sets the time in the time played TextView to the time the player played.
     private void setTimePlayed() {
         TextView timePlayedText = (TextView) findViewById(R.id.time_played_text_view2);
@@ -179,6 +189,17 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
         }
         highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
         highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationManager.removeUpdates(this);
     }
 
     public String determineLevel(int level) {
@@ -222,33 +243,22 @@ public class OutcomeActivity extends AppCompatActivity implements GoogleApiClien
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationListener = new LocationListener() {
-            @Override
-            public void onLocationChanged(Location location) {
-                currentLocation = location;
-            }
-        };
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, new LocationRequest(), locationListener);
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
+    public void onLocationChanged(Location location) {
 
     }
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
 
     }
 }

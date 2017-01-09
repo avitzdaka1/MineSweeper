@@ -4,13 +4,11 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
                 android:id="@+id/fragment__menu_relative_layout">
-    <TextView
+    <ImageView
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:id="@+id/levelTextXML"
+    android:id="@+id/level_image_view"
     android:layout_margin="20dp"
-    android:textSize="25sp"
-    android:textColor="@android:color/black"
     android:layout_centerHorizontal="true"/>
 
     <LinearLayout
@@ -19,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:orientation="horizontal"
-        android:layout_below="@id/levelTextXML"
+        android:layout_below="@id/level_image_view"
         android:weightSum="2">
         <TextView
             android:id="@+id/template_name"
@@ -55,7 +53,7 @@
         android:id="@+id/playImageButton"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:src="@drawable/mine"
+        android:src="@drawable/mine3_small"
         android:layout_alignParentBottom="true"
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
@@ -63,11 +61,11 @@
         android:background="?android:selectableItemBackground"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="40dp"/>
-    <Button
+    <ImageButton
         android:id="@+id/level_fragment_highscores_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Highscores"
+        android:background="@drawable/button_highscores"
         android:layout_centerHorizontal="true"
         android:layout_above="@id/playImageButton"
         android:layout_marginBottom="20dp"/>
