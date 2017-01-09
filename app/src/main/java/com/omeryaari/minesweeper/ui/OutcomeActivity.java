@@ -61,6 +61,9 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
         int minutes = b.getInt("minutes");
         int seconds = b.getInt("seconds");
         difficulty = b.getInt("difficulty");
+        currentLocation = new Location("");
+        currentLocation.setLatitude(b.getDouble("latitude"));
+        currentLocation.setLongitude(b.getDouble("longitude"));
         outcomeText = (TextView) findViewById(R.id.outcome_text_view);
         saveButton = (Button) findViewById(R.id.save_score_button);
         outcomeText.setBackgroundResource(R.drawable.outcome_cell);

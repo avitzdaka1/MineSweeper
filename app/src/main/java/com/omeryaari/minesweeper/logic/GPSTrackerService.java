@@ -15,28 +15,22 @@ import android.os.IBinder;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 
-public class GPSTracker extends Service implements LocationListener {
+public class GPSTrackerService extends Service implements LocationListener {
 
-    private final Context context;
     private boolean isGPSEnabled = false;
     private boolean isNetworkEnabled = false;
     private boolean canGetLocation = false;
     private double latitude;
     private double longitude;
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60;
     private Location location;
+    private LocationServiceBinder locationServiceBinder = new LocationServiceBinder();
     protected LocationManager locationManager;
-
-
-    public GPSTracker(Context context) {
-        this.context = context;
-        getLocation();
-    }
 
     public Location getLocation() {
         try {
-            locationManager = (LocationManager) context.getSystemService(LOCATION_SERVICE);
+            locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
 
             isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
 
@@ -44,7 +38,8 @@ public class GPSTracker extends Service implements LocationListener {
 
             if (!isGPSEnabled && !isNetworkEnabled) {
 
-            } else {
+            }
+            else {
                 this.canGetLocation = true;
 
                 if (isNetworkEnabled) {
@@ -114,23 +109,8 @@ public class GPSTracker extends Service implements LocationListener {
                 // for ActivityCompat#requestPermissions for more details.
                 return;
             }
-            locationManager.removeUpdates(GPSTracker.this);
+            locationManager.removeUpdates(GPSTrackerService.this);
         }
-    }
-
-    public double getLatitude() {
-        if(location != null) {
-            latitude = location.getLatitude();
-        }
-        return latitude;
-    }
-
-    public double getLongitude() {
-        if(location != null) {
-            longitude = location.getLongitude();
-        }
-
-        return longitude;
     }
 
     public boolean canGetLocation() {
@@ -138,7 +118,7 @@ public class GPSTracker extends Service implements LocationListener {
     }
 
     public void showSettingsAlert() {
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getApplicationContext());
 
         alertDialog.setTitle("GPS is settings");
 
@@ -149,7 +129,7 @@ public class GPSTracker extends Service implements LocationListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                context.startActivity(intent);
+                getApplicationContext().startActivity(intent);
             }
         });
 
@@ -166,8 +146,14 @@ public class GPSTracker extends Service implements LocationListener {
 
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        locationServiceBinder.setService(this);
+        return locationServiceBinder;
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        stopUsingGPS();
+        return super.onUnbind(intent);
     }
 
     @Override

@@ -1,7 +1,12 @@
 package com.omeryaari.minesweeper.ui;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.location.Location;
+import android.os.IBinder;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,6 +20,8 @@ import android.widget.TextView;
 import com.omeryaari.minesweeper.R;
 import com.omeryaari.minesweeper.logic.EndGameListener;
 import com.omeryaari.minesweeper.logic.FlagChangeListener;
+import com.omeryaari.minesweeper.logic.GPSTrackerService;
+import com.omeryaari.minesweeper.logic.LocationServiceBinder;
 import com.omeryaari.minesweeper.logic.Logic;
 import com.omeryaari.minesweeper.logic.RefreshBoardListener;
 import com.omeryaari.minesweeper.logic.TimerChangedListener;
@@ -31,6 +38,22 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
     private int buttonSizeParam;
     private int gameSize;
     private int difficulty;
+    private Location currentLocation;
+    private LocationServiceBinder gpsServiceBinder;
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder gpsServiceBinder) {
+            if (gpsServiceBinder instanceof LocationServiceBinder) {
+                GameActivity.this.gpsServiceBinder = (LocationServiceBinder) gpsServiceBinder;
+                currentLocation = ((LocationServiceBinder) gpsServiceBinder).getLocation();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +64,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Bundle b = getIntent().getExtras();
         this.difficulty = b.getInt("key");
+        determinteLocation();
         gameLogic = new Logic(difficulty);
         gameLogic.setTimerListener(this);
         gameLogic.setRefreshBoardListener(this);
@@ -51,6 +75,16 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         calcButtonSize();
         createUIBoard();
         createSelectionButton();
+    }
+
+    //  Creates a new thread that determines the user's location during the game.
+    private void determinteLocation() {
+        Thread thread = new Thread() {
+            public void run() {
+                bindService(new Intent(GameActivity.this, GPSTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+            }
+        };
+        thread.start();
     }
 
     //  Creates the selection button, the button that allows the player to switch between placing
@@ -159,6 +193,8 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         b.putInt("minutes", gameLogic.getMinutes());
         b.putInt("seconds", gameLogic.getSeconds());
         b.putInt("difficulty", difficulty);
+        b.putDouble("latitude", currentLocation.getLatitude());
+        b.putDouble("longitude", currentLocation.getLongitude());
         intent.putExtras(b);
         startActivity(intent);
         finish();
