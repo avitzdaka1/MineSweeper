@@ -55,7 +55,7 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outcome);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        getLocation();
+        //getLocation();
         Bundle b = getIntent().getExtras();
         int outcome = b.getInt("outcome");
         int minutes = b.getInt("minutes");
