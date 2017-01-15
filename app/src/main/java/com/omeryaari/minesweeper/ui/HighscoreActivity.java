@@ -1,4 +1,6 @@
 package com.omeryaari.minesweeper.ui;
+
+import android.Manifest;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.pm.ActivityInfo;
@@ -8,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.location.Address;
 import android.location.Geocoder;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,6 +22,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import com.google.android.gms.maps.*;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -30,6 +34,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.omeryaari.minesweeper.logic.Highscore;
 import com.omeryaari.minesweeper.R;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +58,7 @@ public class HighscoreActivity extends AppCompatActivity {
         level = determineLevel(getIntent().getExtras().getInt("key"));
         loadScores();
         ImageView highscoresLevel = (ImageView) findViewById(R.id.highscores_level_imageview);
-        switch(level) {
+        switch (level) {
             case "Easy":
                 highscoresLevel.setBackgroundResource(R.drawable.level_easy);
                 break;
@@ -136,8 +141,13 @@ public class HighscoreActivity extends AppCompatActivity {
                     for (int i = 0; i < highscoreList.size(); i++) {
                         Highscore tempScore = highscoreList.get(i);
                         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                            try {
-                                List<Address> addresses = geocoder.getFromLocation(tempScore.getLatitude(), tempScore.getLongitude(), 1);
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(tempScore.getLatitude(), tempScore.getLongitude(), 1);
+                            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+                            }
+                            else
+                                googleMap.setMyLocationEnabled(true);
                                 googleMap.addMarker(new MarkerOptions().
                                         position(new LatLng(tempScore.getLatitude(), tempScore.getLongitude())).
                                         title("Highscore #" + (i + 1)).

@@ -11,6 +11,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.location.Location;
+import android.os.Handler;
 import android.os.IBinder;
 import android.renderscript.Sampler;
 import android.support.v4.app.ActivityCompat;
@@ -20,6 +21,7 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
@@ -299,7 +301,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
     //  GameActivity runs this function when an end game event occurred.
     //  Runs when game has ended.
     @Override
-    public void onEndGame(int outcome) {
+    public void onEndGame(final int outcome) {
         ImageView animImageView = (ImageView) findViewById(R.id.animation_image_view);
         FrameLayout frame = (FrameLayout) findViewById(R.id.frame_layout);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(frame.getWidth(), frame.getHeight());
@@ -311,29 +313,37 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         }
         else {
             animImageView.setBackgroundResource(R.drawable.winner_cup);
-            ObjectAnimator winAnimation = ObjectAnimator.ofFloat(animImageView, "alpha", 0.0f, 1.0f);
+            ObjectAnimator winAnimation = ObjectAnimator.ofFloat(animImageView, "alpha", 0, 1);
             winAnimation.setDuration(1000);
-            winAnimation.setRepeatMode(ValueAnimator.REVERSE);
+            //winAnimation.setRepeatMode(ValueAnimator.REVERSE);
+            winAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
             winAnimation.start();
         }
-        Intent intent = new Intent(GameActivity.this, OutcomeActivity.class);
-        Bundle b = new Bundle();
-        b.putInt("outcome", outcome);
-        b.putInt("minutes", gameLogic.getMinutes());
-        b.putInt("seconds", gameLogic.getSeconds());
-        b.putInt("difficulty", difficulty);
-        Location currentLocation = gpsTrackerService.getLocation();
-        if (currentLocation != null) {
-            b.putDouble("latitude", currentLocation.getLatitude());
-            b.putDouble("longitude", currentLocation.getLongitude());
-        }
-        else {
-            b.putDouble("latitude", MadeUpLocation.Latitude.getValue());
-            b.putDouble("longitude", MadeUpLocation.Longitude.getValue());
-        }
-        intent.putExtras(b);
-        startActivity(intent);
-        finish();
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(GameActivity.this, OutcomeActivity.class);
+                Bundle b = new Bundle();
+                b.putInt("outcome", outcome);
+                b.putInt("minutes", gameLogic.getMinutes());
+                b.putInt("seconds", gameLogic.getSeconds());
+                b.putInt("difficulty", difficulty);
+                Location currentLocation = gpsTrackerService.getLocation();
+                if (currentLocation != null) {
+                    b.putDouble("latitude", currentLocation.getLatitude());
+                    b.putDouble("longitude", currentLocation.getLongitude());
+                }
+                else {
+                    b.putDouble("latitude", MadeUpLocation.Latitude.getValue());
+                    b.putDouble("longitude", MadeUpLocation.Longitude.getValue());
+                }
+                intent.putExtras(b);
+                startActivity(intent);
+                finish();
+            }
+        }, 1000);
+
     }
 
     @Override
