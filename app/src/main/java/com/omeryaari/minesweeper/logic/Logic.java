@@ -1,26 +1,26 @@
 package com.omeryaari.minesweeper.logic;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class Logic {
-    //  Values for tiles, numbers 1-8 (including) represent number tiles.
-    public static final int TILE_EMPTY = 0;
-    public static final int TILE_FLAG = 9;
-    public static final int TILE_MINE = 10;
-    // Easy level configurations.
-    public static final int LEVEL_EASY = 0;
-    public static final int LEVEL_EASY_MINES = 5;
-    public static final int LEVEL_EASY_SIZE = 10;
-    // Normal level configurations.
-    public static final int LEVEL_NORMAL = 1;
-    public static final int LEVEL_NORMAL_MINES = 10;
-    public static final int LEVEL_NORMAL_SIZE = 10;
-    //  Hard level configurations.
-    public static final int LEVEL_HARD = 2;
-    public static final int LEVEL_HARD_MINES = 10;
-    public static final int LEVEL_HARD_SIZE = 5;
+
+    //  Level configurations.
+    public enum LevelProperty {
+        Easy(0), Easy_Mines(5), Easy_Size(10), Normal(1), Normal_Mines(10), Normal_Size(10), Hard(2), Hard_Mines(10), Hard_Size(5);
+        private int value;
+        LevelProperty(int value) {
+            this.value = value;
+        }
+        public int getValue() {
+            return value;
+        }
+    }
+
     public static final int CLICK_TYPE_MINE = 0;
     public static final int CLICK_TYPE_FLAG = 1;
+    public static final int MINES_TO_ADD_WHEN_TILTED = 3;
     //  Finals used for in the TimerTask.
     public static final int TIMER_SLEEP_TIME = 1000;
     public static final int SECONDS_IN_MINUTE = 60;
@@ -35,10 +35,10 @@ public class Logic {
     private int clickType;
     private int timerSeconds;
     private int timerMinutes;
-    private TimerChangedListener timerListener;
+    private List<TimerChangedListener> timerListeners = new ArrayList<>();
     private RefreshBoardListener refreshListener;
     private EndGameListener endGameListener;
-    private FlagChangeListener flagChangeListener;
+    private MinesUpdateListener minesUpdateListener;
 
     public Logic(int difficulty) {
         this.difficulty = difficulty;
@@ -54,10 +54,10 @@ public class Logic {
     private void unveilBlanksAndNumbers(int row, int col) {
         Tile tempTile = logicBoard[row][col];
         //  If tile is already visible, do nothing.
-        if (tempTile.getValue() != TILE_MINE)
+        if (tempTile.getValue() != Tile.TileProperty.Mine.ordinal())
             tempTile.unveil();
 
-        if (tempTile.getValue() == TILE_EMPTY){
+        if (tempTile.getValue() == Tile.TileProperty.Empty.ordinal()){
             if (row != logicBoard.length - 1 && !logicBoard[row + 1][col].isVisible())
                 unveilBlanksAndNumbers(row + 1, col);
             if (row != 0  && !logicBoard[row - 1][col].isVisible())
@@ -73,20 +73,24 @@ public class Logic {
     public int checkTile(int row, int col) {
         Tile tempTile = logicBoard[row][col];
         int value = tempTile.getValue();
+        Tile.TileProperty tempTileProperty = Tile.TileProperty.Invisible;
+        for(Tile.TileProperty tile : Tile.TileProperty.values())
+                if (tile.ordinal() == value)
+                    tempTileProperty = tile;
         //  If the click type is mine.
             if (clickType == CLICK_TYPE_MINE) {
                 if (tempTile.isFlagged())
-                    value = TILE_FLAG;
+                    value = Tile.TileProperty.Flag.ordinal();
                 else {
-                    switch (value) {
-                        case TILE_EMPTY: {
+                    switch (tempTileProperty) {
+                        case Empty: {
                             if (!tempTile.isVisible()) {
                                 unveilBlanksAndNumbers(row, col);
                                 refreshListener.refreshBoard();
                             }
                             break;
                         }
-                        case TILE_MINE: {
+                        case Mine: {
                             endGameListener.onEndGame(OUTCOME_LOSS);
                             break;
                         }
@@ -102,18 +106,18 @@ public class Logic {
                 if (tempTile.isFlagged()) {
                     tempTile.unFlag();
                     flagsCount--;
-                    value = TILE_INVISIBLE;
-                    flagChangeListener.flagChange();
+                    value = Tile.TileProperty.Invisible.ordinal();
+                    minesUpdateListener.minesUpdated();
                 }
                 else {
                     if (flagsCount < numOfMines) {
                         tempTile.flag();
                         flagsCount++;
-                        value = TILE_FLAG;
-                        flagChangeListener.flagChange();
+                        value = Tile.TileProperty.Flag.ordinal();
+                        minesUpdateListener.minesUpdated();
                     }
                     else
-                        value = TILE_INVISIBLE;
+                        value = Tile.TileProperty.Invisible.ordinal();
                 }
             }
         }
@@ -125,7 +129,7 @@ public class Logic {
         int minesFlagged = 0;
         for(int row = 0; row < logicBoard.length; row++) {
             for(int col = 0; col < logicBoard[0].length; col++) {
-                if (logicBoard[row][col].getValue() == TILE_MINE && logicBoard[row][col].isFlagged())
+                if (logicBoard[row][col].getValue() == Tile.TileProperty.Mine.ordinal() && logicBoard[row][col].isFlagged())
                     minesFlagged++;
             }
         }
@@ -148,22 +152,26 @@ public class Logic {
 
     //  Initializes the game, logic wise.
     private void initGame() {
-        switch (difficulty) {
-            case LEVEL_EASY: {
-                numOfMines = LEVEL_EASY_MINES;
-                logicBoard = new Tile[LEVEL_EASY_SIZE][LEVEL_EASY_SIZE];
+        LevelProperty tempLevelProperty = LevelProperty.Easy;
+        for(LevelProperty level : LevelProperty.values())
+            if (difficulty == level.getValue())
+                tempLevelProperty = level;
+        switch (tempLevelProperty) {
+            case Easy: {
+                numOfMines = LevelProperty.Easy_Mines.getValue();
+                logicBoard = new Tile[LevelProperty.Easy_Size.getValue()][LevelProperty.Easy_Size.getValue()];
                 createTiles();
                 break;
             }
-            case LEVEL_NORMAL: {
-                numOfMines = LEVEL_NORMAL_MINES;
-                logicBoard = new Tile[LEVEL_NORMAL_SIZE][LEVEL_NORMAL_SIZE];
+            case Normal: {
+                numOfMines = LevelProperty.Normal_Mines.getValue();
+                logicBoard = new Tile[LevelProperty.Normal_Size.getValue()][LevelProperty.Normal_Size.getValue()];
                 createTiles();
                 break;
             }
-            case LEVEL_HARD: {
-                numOfMines = LEVEL_HARD_MINES;
-                logicBoard = new Tile[LEVEL_HARD_SIZE][LEVEL_HARD_SIZE];
+            case Hard: {
+                numOfMines = LevelProperty.Hard_Mines.getValue();
+                logicBoard = new Tile[LevelProperty.Hard_Size.getValue()][LevelProperty.Hard_Size.getValue()];
                 createTiles();
                 break;
             }
@@ -180,7 +188,7 @@ public class Logic {
     private void createTiles() {
         for(int row = 0; row < logicBoard.length; row++) {
             for(int col = 0; col < logicBoard[0].length; col++) {
-                logicBoard[row][col] = new Tile(TILE_EMPTY);
+                logicBoard[row][col] = new Tile(Tile.TileProperty.Empty.ordinal());
             }
         }
         randomizeMines();
@@ -217,12 +225,83 @@ public class Logic {
             row = rand.nextInt(logicBoard.length);
             col = rand.nextInt(logicBoard.length);
             Tile tempTile = logicBoard[row][col];
-            if (tempTile.getValue() != TILE_MINE) {
-                tempTile.setValue(TILE_MINE);
+            if (tempTile.getValue() != Tile.TileProperty.Mine.ordinal()) {
+                tempTile.setValue(Tile.TileProperty.Mine.ordinal());
                 createNumberTiles(row, col);
                 minesLeftToPlace--;
             }
         }
+    }
+
+    //  Adds a single mine every second if the device was tilted.
+    public void onTiltDevice(ScreenSide side) {
+            boolean mineAdded = false;
+            switch (side) {
+                case Left:
+                    for (int col = 0; col < logicBoard[0].length; col++) {
+                        mineAdded = addMineInCol(col);
+                        if (mineAdded)
+                            break;
+                    }
+                    break;
+                case Right:
+                    for (int col = logicBoard[0].length - 1; col > 0; col--) {
+                        mineAdded = addMineInCol(col);
+                        if (mineAdded)
+                            break;
+                    }
+                    break;
+                case Top:
+                    for (int row = 0; row < logicBoard.length; row++) {
+                        mineAdded = addMineInRow(row);
+                        if (mineAdded)
+                            break;
+                    }
+                    break;
+                case Bottom:
+                    for (int row = logicBoard.length - 1; row > 0; row--) {
+                        mineAdded = addMineInRow(row);
+                        if (mineAdded)
+                            break;
+                    }
+                    break;
+            }
+            if (mineAdded) {
+                numOfMines++;
+                if (numOfMines == logicBoard.length * logicBoard[0].length) {
+                    endGameListener.onEndGame(OUTCOME_LOSS);
+                }
+                minesUpdateListener.minesUpdated();
+                refreshListener.refreshBoard();
+            }
+    }
+
+    //  Attemps to add a mine in the given column.
+    private boolean addMineInCol(int col) {
+        for(int row = 0; row < logicBoard.length; row++) {
+            if (logicBoard[row][col].getValue() != Tile.TileProperty.Mine.ordinal()) {
+                logicBoard[row][col].setValue(Tile.TileProperty.Mine.ordinal());
+                createNumberTiles(row, col);
+                if (logicBoard[row][col].isVisible())
+                    logicBoard[row][col].hide();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    //  Attempts to add a mine in the given row.
+    private boolean addMineInRow(int row) {
+        for(int col = 0; col < logicBoard[0].length; col++) {
+            if (logicBoard[row][col].getValue() != Tile.TileProperty.Mine.ordinal()) {
+                logicBoard[row][col].setValue(Tile.TileProperty.Mine.ordinal());
+                createNumberTiles(row, col);
+                if (logicBoard[row][col].isVisible())
+                    logicBoard[row][col].hide();
+                return true;
+            }
+        }
+        return false;
     }
 
     //  Timer task.
@@ -241,7 +320,8 @@ public class Logic {
                         timerSeconds = 0;
                         timerMinutes++;
                     }
-                    timerListener.timeChanged();
+                    for(TimerChangedListener listener : timerListeners)
+                        listener.timeChanged();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -272,7 +352,7 @@ public class Logic {
 
     //  Sets the timer listener (which is actually the GameActivity).
     public void setTimerListener(TimerChangedListener timerListener) {
-        this.timerListener = timerListener;
+        timerListeners.add(timerListener);
     }
     //  Sets the refresh board listener (which is actually the GameActivity).
     public void setRefreshBoardListener(RefreshBoardListener refreshListener) {
@@ -284,8 +364,16 @@ public class Logic {
     }
 
     //  Sets the flag change listener (which is actually the GameActivity).
-    public void setFlagChangeListener(FlagChangeListener flagChangeListener) {
-        this.flagChangeListener = flagChangeListener;
-        flagChangeListener.flagChange();
+    public void setMinesUpdateListener(MinesUpdateListener minesUpdateListener) {
+        this.minesUpdateListener = minesUpdateListener;
+        minesUpdateListener.minesUpdated();
+    }
+
+    public boolean isFlagged(int row, int col) {
+        return logicBoard[row][col].isFlagged();
+    }
+
+    public enum ScreenSide {
+        Top, Bottom, Right, Left, Initial;
     }
 }

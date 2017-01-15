@@ -1,11 +1,6 @@
 package com.omeryaari.minesweeper.ui;
 
-import android.Manifest;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -30,11 +25,9 @@ import com.omeryaari.minesweeper.logic.Logic;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class OutcomeActivity extends AppCompatActivity implements LocationListener {
+public class OutcomeActivity extends AppCompatActivity {
 
     private final String TAG = this.getClass().getSimpleName();
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1;
 
     private TextView outcomeText;
     private Button saveButton;
@@ -44,9 +37,6 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
     private Highscore highscore;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
     private Location currentLocation;
-    protected LocationManager locationManager;
-    private boolean isGPSEnabled = false;
-    private boolean isNetworkEnabled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +45,6 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_outcome);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        //getLocation();
         Bundle b = getIntent().getExtras();
         int outcome = b.getInt("outcome");
         int minutes = b.getInt("minutes");
@@ -80,51 +69,6 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
         } else
             lossCodeSequence();
         setTimePlayed();
-    }
-
-    private void getLocation() {
-        try {
-            locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
-            isGPSEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-            isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-            if (!isGPSEnabled && !isNetworkEnabled) {
-
-            } else {
-                if (isNetworkEnabled) {
-
-                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions, and then overriding
-                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                        //                                          int[] grantResults)
-                        // to handle the case where the user grants the permission. See the documentation
-                        // for ActivityCompat#requestPermissions for more details.
-                        return;
-                    }
-                    locationManager.requestLocationUpdates(
-                            LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATES,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-
-                    if (locationManager != null)
-                        currentLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                }
-
-                if (isGPSEnabled) {
-                    if (currentLocation == null) {
-                        locationManager.requestLocationUpdates(
-                                LocationManager.GPS_PROVIDER,
-                                MIN_TIME_BW_UPDATES,
-                                MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                        if (locationManager != null)
-                            currentLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     //  Runs if the player has won and made a high score.
@@ -192,17 +136,6 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
         }
         highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
         highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        locationManager.removeUpdates(this);
     }
 
     public String determineLevel(int level) {
@@ -243,25 +176,5 @@ public class OutcomeActivity extends AppCompatActivity implements LocationListen
             return true;
         else
             return highscore.compareTo(highscoreList.get(highscoreList.size() - 1)) == 1;
-    }
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String s) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String s) {
-
     }
 }

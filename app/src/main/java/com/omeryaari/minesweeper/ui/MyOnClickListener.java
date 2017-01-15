@@ -1,24 +1,14 @@
 package com.omeryaari.minesweeper.ui;
+import android.graphics.Color;
 import android.view.View;
-import android.view.ViewParent;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 
 import com.omeryaari.minesweeper.R;
 import com.omeryaari.minesweeper.logic.Logic;
+import com.omeryaari.minesweeper.logic.Tile;
 
 public class MyOnClickListener implements View.OnClickListener {
-    public static final int TILE_EMPTY = 0;
-    public static final int TILE_FLAG = 9;
-    public static final int TILE_MINE = 10;
-    public static final int TILE_ONE = 1;
-    public static final int TILE_TWO = 2;
-    public static final int TILE_THREE = 3;
-    public static final int TILE_FOUR = 4;
-    public static final int TILE_FIVE = 5;
-    public static final int TILE_SIX = 6;
-    public static final int TILE_SEVEN = 7;
-    public static final int TILE_EIGHT = 8;
+
     public static final int TILE_DEFAULT_PADDING = 10;
     private int row;
     private int col;
@@ -36,51 +26,44 @@ public class MyOnClickListener implements View.OnClickListener {
         thisButton.setScaleType(ImageButton.ScaleType.FIT_CENTER);
         thisButton.setPadding(TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING, TILE_DEFAULT_PADDING);
         int value = gameLogic.checkTile(row, col);
-        switch(value) {
-            case TILE_EMPTY: {
-                thisButton.setImageResource(android.R.drawable.screen_background_light);
+        Tile.TileProperty tempTileProperty = Tile.TileProperty.Invisible;
+        for(Tile.TileProperty tileProp : Tile.TileProperty.values())
+            if(value == tileProp.ordinal())
+                tempTileProperty = tileProp;
+        switch(tempTileProperty) {
+            case Empty:
+                thisButton.setImageResource(android.R.color.black);
                 break;
-            }
-            case TILE_FLAG: {
+            case Flag:
                 thisButton.setImageResource(R.drawable.redflag);
                 break;
-            }
-            case TILE_MINE: {
-                thisButton.setImageResource(R.drawable.mine);
+            case Mine:
+                thisButton.setImageResource(R.drawable.mine3_small);
                 break;
-            }
-            case TILE_ONE: {
+            case One:
                 thisButton.setImageResource(R.drawable.one);
                 break;
-            }
-            case TILE_TWO: {
+            case Two:
                 thisButton.setImageResource(R.drawable.two);
                 break;
-            }
-            case TILE_THREE: {
+            case Three:
                 thisButton.setImageResource(R.drawable.three);
                 break;
-            }
-            case TILE_FOUR: {
+            case Four:
                 thisButton.setImageResource(R.drawable.four);
                 break;
-            }
-            case TILE_FIVE: {
+            case Five:
                 thisButton.setImageResource(R.drawable.five);
                 break;
-            }
-            case TILE_SIX: {
+            case Six:
                 thisButton.setImageResource(R.drawable.six);
                 break;
-            }
-            case TILE_SEVEN: {
+            case Seven:
                 thisButton.setImageResource(R.drawable.seven);
                 break;
-            }
-            case TILE_EIGHT: {
+            case Eight:
                 thisButton.setImageResource(R.drawable.eight);
                 break;
-            }
             default:
                 thisButton.setImageResource(android.R.color.transparent);
                 break;

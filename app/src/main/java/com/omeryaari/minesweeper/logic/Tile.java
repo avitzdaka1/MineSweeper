@@ -1,7 +1,12 @@
 package com.omeryaari.minesweeper.logic;
 
 public class Tile {
-    public static final int TILE_MINE = 10;
+
+    //  Values for tiles, numbers 1-8 (including) represent number tiles.
+    public enum TileProperty {
+        Empty, One, Two, Three, Four, Five, Six, Seven, Eight, Flag, Mine, Invisible;
+    }
+
     private int value;
     private boolean flagged;
     private boolean visible;
@@ -20,12 +25,16 @@ public class Tile {
     }
 
     public void setValue(int value) {
-        if (this.value != TILE_MINE)
+        if (this.value != TileProperty.Mine.ordinal())
             this.value = value;
     }
 
     public boolean isFlagged() {
         return flagged;
+    }
+
+    public void hide() {
+        visible = false;
     }
 
     public void unveil() {

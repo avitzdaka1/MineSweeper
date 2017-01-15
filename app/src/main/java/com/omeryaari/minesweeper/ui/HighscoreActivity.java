@@ -112,11 +112,6 @@ public class HighscoreActivity extends AppCompatActivity {
         tableFragment = TableScoreFragment.newInstance(highscoreList);
     }
 
-    //  Creates the map fragment on the activity's creation.
-    private void createMapFragment() {
-
-    }
-
     //  Loads the table fragment into the fragment place holder.
     private void showTable() {
         isMap = false;
@@ -141,44 +136,44 @@ public class HighscoreActivity extends AppCompatActivity {
                     for (int i = 0; i < highscoreList.size(); i++) {
                         Highscore tempScore = highscoreList.get(i);
                         Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(tempScore.getLatitude(), tempScore.getLongitude(), 1);
-                            googleMap.addMarker(new MarkerOptions().
-                                    position(new LatLng(tempScore.getLatitude(), tempScore.getLongitude())).
-                                    title("Highscore #" + (i+1)).
-                                    snippet("Name: " + tempScore.getName() + "\n" + "Time: " + tempScore.getCorrectedTimeString() + "\n" + "Address: " + addresses.get(0).getAddressLine(0)));
-                            googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                            try {
+                                List<Address> addresses = geocoder.getFromLocation(tempScore.getLatitude(), tempScore.getLongitude(), 1);
+                                googleMap.addMarker(new MarkerOptions().
+                                        position(new LatLng(tempScore.getLatitude(), tempScore.getLongitude())).
+                                        title("Highscore #" + (i + 1)).
+                                        snippet("Name: " + tempScore.getName() + "\n" + "Time: " + tempScore.getCorrectedTimeString() + "\n" + "Address: " + addresses.get(0).getAddressLine(0)));
+                                googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
-                                @Override
-                                public View getInfoWindow(Marker arg0) {
-                                    return null;
-                                }
+                                    @Override
+                                    public View getInfoWindow(Marker arg0) {
+                                        return null;
+                                    }
 
-                                @Override
-                                public View getInfoContents(Marker marker) {
+                                    @Override
+                                    public View getInfoContents(Marker marker) {
 
-                                    LinearLayout info = new LinearLayout(getApplicationContext());
-                                    info.setOrientation(LinearLayout.VERTICAL);
+                                        LinearLayout info = new LinearLayout(getApplicationContext());
+                                        info.setOrientation(LinearLayout.VERTICAL);
 
-                                    TextView title = new TextView(getApplicationContext());
-                                    title.setTextColor(Color.BLACK);
-                                    title.setGravity(Gravity.CENTER);
-                                    title.setTypeface(null, Typeface.BOLD);
-                                    title.setText(marker.getTitle());
+                                        TextView title = new TextView(getApplicationContext());
+                                        title.setTextColor(Color.BLACK);
+                                        title.setGravity(Gravity.CENTER);
+                                        title.setTypeface(null, Typeface.BOLD);
+                                        title.setText(marker.getTitle());
 
-                                    TextView snippet = new TextView(getApplicationContext());
-                                    snippet.setTextColor(Color.GRAY);
-                                    snippet.setText(marker.getSnippet());
+                                        TextView snippet = new TextView(getApplicationContext());
+                                        snippet.setTextColor(Color.GRAY);
+                                        snippet.setText(marker.getSnippet());
 
-                                    info.addView(title);
-                                    info.addView(snippet);
+                                        info.addView(title);
+                                        info.addView(snippet);
 
-                                    return info;
-                                }
-                            });
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                                        return info;
+                                    }
+                                });
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                     }
                 }
             });
