@@ -39,6 +39,7 @@ public class Logic {
     private RefreshBoardListener refreshListener;
     private EndGameListener endGameListener;
     private MinesUpdateListener minesUpdateListener;
+    private Thread timerThread;
 
     public Logic(int difficulty) {
         this.difficulty = difficulty;
@@ -180,7 +181,7 @@ public class Logic {
         }
         flagsCount = 0;
         TimerTask timerTask = new TimerTask();
-        Thread timerThread = new Thread(timerTask);
+        timerThread = new Thread(timerTask);
         timerThread.start();
     }
 
@@ -371,6 +372,10 @@ public class Logic {
 
     public boolean isFlagged(int row, int col) {
         return logicBoard[row][col].isFlagged();
+    }
+
+    public void stopThread() {
+        timerThread.interrupt();
     }
 
     public enum ScreenSide {

@@ -19,7 +19,7 @@ public class MotionHandler implements Runnable, AccelerometerService.Acceleromet
     }
 
     @Override
-    public void onSensorEvent(float[] values) {
+    public void onAccelerometerSensorEvent(float[] values) {
         if (!started) {
             initialValues = values.clone();
             started = true;

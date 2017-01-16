@@ -37,6 +37,7 @@ public class OutcomeActivity extends AppCompatActivity {
     private Highscore highscore;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
     private Location currentLocation;
+    private int outcome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +47,8 @@ public class OutcomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_outcome);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Bundle b = getIntent().getExtras();
-        int outcome = b.getInt("outcome");
+        outcome = b.getInt("outcome");
+        loadScores();
         int minutes = b.getInt("minutes");
         int seconds = b.getInt("seconds");
         difficulty = b.getInt("difficulty");
@@ -56,23 +58,20 @@ public class OutcomeActivity extends AppCompatActivity {
         outcomeText = (TextView) findViewById(R.id.outcome_text_view);
         saveButton = (Button) findViewById(R.id.save_score_button);
         outcomeText.setBackgroundResource(R.drawable.outcome_cell);
-        loadScores();
+        saveButton.setClickable(false);
         highscore = new Highscore();
         highscore.setMinutes(minutes);
         highscore.setSeconds(seconds);
-        if (outcome == Logic.OUTCOME_WIN) {
+        if (outcome == Logic.OUTCOME_WIN)
             outcomeText.setText(R.string.win_text);
-            if (isNewHighscore())
-                winNewHighscoreCodeSequence();
-            else
-                winNoHighscoreCodeSequence();
-        } else
+        else
             lossCodeSequence();
         setTimePlayed();
     }
 
     //  Runs if the player has won and made a high score.
     private void winNewHighscoreCodeSequence() {
+        saveButton.setText(R.string.save_name_button);
         LinearLayout saveNameLayout = (LinearLayout) findViewById(R.id.save_name_layout);
         saveName = new EditText(this);
         saveName.setHint(R.string.name_edit_text);
@@ -127,6 +126,8 @@ public class OutcomeActivity extends AppCompatActivity {
             highscore.setLongitude(currentLocation.getLongitude());
         }
         highscoreList.add(highscore);
+        highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
+        highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
         //  If this highscore isn't the first highscore.
         if (highscoreList.size() > Highscore.MAX_HIGHSCORES) {
             Collections.sort(highscoreList);
@@ -134,8 +135,6 @@ public class OutcomeActivity extends AppCompatActivity {
             highscoresDB.child("Highscores").child(level).child("List").child(highscoreList.get(highscoreList.size() - 1).getFirebaseKey()).removeValue();
             highscoreList.remove(highscoreList.size() - 1);
         }
-        highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
-        highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
     }
 
     public String determineLevel(int level) {
@@ -161,6 +160,14 @@ public class OutcomeActivity extends AppCompatActivity {
                     Highscore tempHighScore = snap.getValue(Highscore.class);
                     highscoreList.add(tempHighScore);
                 }
+                Collections.sort(highscoreList);
+                saveButton.setClickable(true);
+                if (outcome == Logic.OUTCOME_WIN) {
+                    if (isNewHighscore())
+                        winNewHighscoreCodeSequence();
+                    else
+                        winNoHighscoreCodeSequence();
+                }
             }
 
             @Override
@@ -175,6 +182,6 @@ public class OutcomeActivity extends AppCompatActivity {
         if (highscoreList.size() < Highscore.MAX_HIGHSCORES)
             return true;
         else
-            return highscore.compareTo(highscoreList.get(highscoreList.size() - 1)) == 1;
+            return highscore.compareTo(highscoreList.get(highscoreList.size() - 1)) == -1;
     }
 }

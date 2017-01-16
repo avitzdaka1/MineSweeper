@@ -91,7 +91,7 @@ public class TableScoreFragment extends Fragment {
                 else {
                     switch (j) {
                         case 0:
-                            tempTextView.setText(String.valueOf(i-1));
+                            tempTextView.setText(String.valueOf(i));
                             break;
                         case 1:
                             String tempName = highscoreList.get(i-1).getName();

@@ -23,7 +23,7 @@ public class AccelerometerService extends Service implements SensorEventListener
     }
 
     public interface AccelerometerListener {
-        void onSensorEvent(float[] values);
+        void onAccelerometerSensorEvent(float[] values);
     }
 
     public void setListener(AccelerometerListener listener) {
@@ -32,8 +32,10 @@ public class AccelerometerService extends Service implements SensorEventListener
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (listener != null)
-            listener.onSensorEvent(event.values);
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            if (listener != null)
+                listener.onAccelerometerSensorEvent(event.values);
+        }
     }
 
     @Override
@@ -47,11 +49,6 @@ public class AccelerometerService extends Service implements SensorEventListener
         return accelerometerServiceBinder;
     }
 
-    @Override
-    public boolean onUnbind(Intent intent) {
-        stopListening();
-        return super.onUnbind(intent);
-    }
 
     public void startListening() {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);

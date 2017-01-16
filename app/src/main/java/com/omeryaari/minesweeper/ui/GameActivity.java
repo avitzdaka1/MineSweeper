@@ -11,10 +11,13 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.AnimationDrawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.renderscript.Sampler;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -23,12 +26,15 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.android.gms.games.Game;
 import com.omeryaari.minesweeper.R;
 import com.omeryaari.minesweeper.logic.EndGameListener;
 import com.omeryaari.minesweeper.logic.MinesUpdateListener;
@@ -38,6 +44,8 @@ import com.omeryaari.minesweeper.service.GPSTrackerService;
 import com.omeryaari.minesweeper.logic.Logic;
 import com.omeryaari.minesweeper.logic.RefreshBoardListener;
 import com.omeryaari.minesweeper.logic.TimerChangedListener;
+
+import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements TimerChangedListener, RefreshBoardListener, EndGameListener, MinesUpdateListener {
 
@@ -302,48 +310,81 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
     //  Runs when game has ended.
     @Override
     public void onEndGame(final int outcome) {
-        ImageView animImageView = (ImageView) findViewById(R.id.animation_image_view);
-        FrameLayout frame = (FrameLayout) findViewById(R.id.frame_layout);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(frame.getWidth(), frame.getHeight());
-        animImageView.setLayoutParams(params);
-        if (outcome == Logic.OUTCOME_LOSS) {
-            animImageView.setBackgroundResource(R.drawable.animation_explosion);
-            AnimationDrawable lossAnimation = (AnimationDrawable) animImageView.getBackground();
-            lossAnimation.start();
-        }
-        else {
-            animImageView.setBackgroundResource(R.drawable.winner_cup);
-            ObjectAnimator winAnimation = ObjectAnimator.ofFloat(animImageView, "alpha", 0, 1);
-            winAnimation.setDuration(1000);
-            //winAnimation.setRepeatMode(ValueAnimator.REVERSE);
-            winAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
-            winAnimation.start();
-        }
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
+        runOnUiThread(new Runnable() {
+            @RequiresApi(api = Build.VERSION_CODES.M)
             @Override
             public void run() {
-                Intent intent = new Intent(GameActivity.this, OutcomeActivity.class);
-                Bundle b = new Bundle();
-                b.putInt("outcome", outcome);
-                b.putInt("minutes", gameLogic.getMinutes());
-                b.putInt("seconds", gameLogic.getSeconds());
-                b.putInt("difficulty", difficulty);
-                Location currentLocation = gpsTrackerService.getLocation();
-                if (currentLocation != null) {
-                    b.putDouble("latitude", currentLocation.getLatitude());
-                    b.putDouble("longitude", currentLocation.getLongitude());
+                gameLogic.stopThread();
+                selectionButton.setVisibility(View.INVISIBLE);
+                final ImageView animImageView = (ImageView) findViewById(R.id.animation_image_view);
+                FrameLayout frame = (FrameLayout) findViewById(R.id.frame_layout);
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(frame.getWidth(), frame.getHeight());
+                animImageView.setLayoutParams(params);
+                if (outcome == Logic.OUTCOME_LOSS) {
+                    animImageView.setBackgroundResource(R.drawable.animation_explosion);
+                    AnimationDrawable lossAnimation = (AnimationDrawable) animImageView.getBackground();
+                    lossAnimation.start();
+                    for(int i = 0; i < gameButtons.length; i++) {
+                        for(int j = 0; j < gameButtons[0].length; j++) {
+                            animateRandomlyFlyingOut(gameButtons[i][j], 1400);
+                        }
+                    }
+                } else {
+                    boardGrid.setVisibility(View.INVISIBLE);
+                    animImageView.setBackgroundResource(R.drawable.winner_cup);
+                    ObjectAnimator winAnimation = ObjectAnimator.ofFloat(animImageView, "alpha", 0, 1);
+                    winAnimation.setDuration(1400);
+                    winAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+                    winAnimation.start();
                 }
-                else {
-                    b.putDouble("latitude", MadeUpLocation.Latitude.getValue());
-                    b.putDouble("longitude", MadeUpLocation.Longitude.getValue());
-                }
-                intent.putExtras(b);
-                startActivity(intent);
-                finish();
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Intent intent = new Intent(GameActivity.this, OutcomeActivity.class);
+                        Bundle b = new Bundle();
+                        b.putInt("outcome", outcome);
+                        b.putInt("minutes", gameLogic.getMinutes());
+                        b.putInt("seconds", gameLogic.getSeconds());
+                        b.putInt("difficulty", difficulty);
+                        Location currentLocation = gpsTrackerService.getLocation();
+                        if (currentLocation != null) {
+                            b.putDouble("latitude", currentLocation.getLatitude());
+                            b.putDouble("longitude", currentLocation.getLongitude());
+                        } else {
+                            b.putDouble("latitude", MadeUpLocation.Latitude.getValue());
+                            b.putDouble("longitude", MadeUpLocation.Longitude.getValue());
+                        }
+                        intent.putExtras(b);
+                        startActivity(intent);
+                        finish();
+                    }
+                }, 1400);
             }
-        }, 1000);
+        });
+    }
 
+    public void animateRandomlyFlyingOut(View view, long duration) {
+        Random random = new Random();
+        int otherSide;
+        otherSide = random.nextBoolean() ? 1 : -1;
+        ObjectAnimator flyOutX = ObjectAnimator.ofFloat(view, "x", view.getX(), metrics.widthPixels * otherSide);
+        flyOutX.setDuration(duration);
+        flyOutX.setInterpolator(new DecelerateInterpolator());
+
+        otherSide = random.nextBoolean() ? 1 : -1;
+        ObjectAnimator flyOutY = ObjectAnimator.ofFloat(view, "y", view.getY(), metrics.widthPixels * otherSide);
+        flyOutY.setDuration(duration);
+        flyOutY.setInterpolator(new DecelerateInterpolator());
+
+        otherSide = random.nextBoolean() ? 1 : -1;
+        ObjectAnimator rotate = ObjectAnimator.ofFloat(view, "rotation", otherSide == 1 ? 0f : 360f, otherSide == 1 ? 360f : 0f);
+        rotate.setDuration(duration);
+        rotate.setInterpolator(new DecelerateInterpolator());
+
+        rotate.start();
+        flyOutY.start();
+        flyOutX.start();
     }
 
     @Override

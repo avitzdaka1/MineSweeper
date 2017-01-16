@@ -18,12 +18,17 @@ public class GPSTrackerService extends Service implements LocationListener {
     private static final long MIN_TIME_BW_UPDATES = 1000 * 60;
     private Location location;
     private GPSServiceBinder gpsServiceBinder;
+    private LocationChangeListener locationChangeListener;
     protected LocationManager locationManager;
 
     public class GPSServiceBinder extends Binder {
         public GPSTrackerService getService() {
             return GPSTrackerService.this;
         }
+    }
+
+    public interface LocationChangeListener {
+        void onNewLocation(Location location);
     }
 
     public Location getLocation() {
@@ -65,6 +70,10 @@ public class GPSTrackerService extends Service implements LocationListener {
         }
     }
 
+    public void setLocationChangeListener(LocationChangeListener locationChangeListener) {
+        this.locationChangeListener = locationChangeListener;
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         gpsServiceBinder = new GPSServiceBinder();
@@ -79,6 +88,7 @@ public class GPSTrackerService extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        locationChangeListener.onNewLocation(location);
         this.location = location;
     }
 

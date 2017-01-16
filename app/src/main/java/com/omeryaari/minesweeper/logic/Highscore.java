@@ -72,7 +72,7 @@ public class Highscore implements Serializable, Comparable<Highscore> {
                 return -1;
         }
         else
-            return 0;
+            return -1;
     }
 
     //  Generates "time strings"
