@@ -55,11 +55,14 @@ import java.util.Locale;
 
 public class HighscoreActivity extends AppCompatActivity implements AzimutService.AzimutListener, GPSTrackerService.LocationChangeListener{
 
+    public static final String FIREBASE_LIST_LOCATION = "List";
+    public static final String FIREBASE_HIGHSCORES_LOCATION = "Highscores";
     private static final int TAG_CODE_PERMISSION_LOCATION = 2;
     private static final float MAP_ZOOM_DEFAULT = 7.0f;
     private static final long MIN_TIME_BW_UPDATES = 500;
     private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 1;
-    private String level;
+
+    private LevelFragment.Level level;
     private Fragment tableFragment;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
     private final String TAG = this.getClass().getSimpleName();
@@ -94,17 +97,17 @@ public class HighscoreActivity extends AppCompatActivity implements AzimutServic
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         checkLocationPermissions();
         startAzimutService();
-        level = determineLevel(getIntent().getExtras().getInt("key"));
+        level = determineLevel(getIntent().getExtras().getInt("difficulty"));
         loadScores();
         ImageView highscoresLevel = (ImageView) findViewById(R.id.highscores_level_imageview);
         switch (level) {
-            case "Easy":
+            case Easy:
                 highscoresLevel.setBackgroundResource(R.drawable.level_easy);
                 break;
-            case "Normal":
+            case Normal:
                 highscoresLevel.setBackgroundResource(R.drawable.level_normal);
                 break;
-            case "Hard":
+            case Hard:
                 highscoresLevel.setBackgroundResource(R.drawable.level_hard);
                 break;
         }
@@ -147,16 +150,12 @@ public class HighscoreActivity extends AppCompatActivity implements AzimutServic
     }
 
     //  Determines level.
-    public String determineLevel(int level) {
-        switch (level) {
-            case 0:
-                return "Easy";
-            case 1:
-                return "Normal";
-            case 2:
-                return "Hard";
-        }
-        return "";
+    public LevelFragment.Level determineLevel(int difficulty) {
+        LevelFragment.Level level = LevelFragment.Level.Easy;
+        for(LevelFragment.Level tempLevel : LevelFragment.Level.values())
+            if (difficulty == tempLevel.ordinal())
+                level = tempLevel;
+        return level;
     }
 
     //  Sets the two buttons up and assigns listeners to them.
@@ -287,7 +286,7 @@ public class HighscoreActivity extends AppCompatActivity implements AzimutServic
     //  Loads the high scores from firebase.
     private void loadScores() {
         DatabaseReference highscoresDB = FirebaseDatabase.getInstance().getReference();
-        highscoresDB.child("Highscores").child(level).child("List").addListenerForSingleValueEvent(new ValueEventListener() {
+        highscoresDB.child(FIREBASE_HIGHSCORES_LOCATION).child(level.getValue()).child(FIREBASE_LIST_LOCATION).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for(DataSnapshot snap: dataSnapshot.getChildren()) {

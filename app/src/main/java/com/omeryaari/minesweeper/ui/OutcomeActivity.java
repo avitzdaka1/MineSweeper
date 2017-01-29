@@ -5,14 +5,12 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.location.Location;
-
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -27,12 +25,9 @@ import java.util.Collections;
 
 public class OutcomeActivity extends AppCompatActivity {
 
-    private final String TAG = this.getClass().getSimpleName();
-
     private TextView outcomeText;
     private Button saveButton;
     private EditText saveName;
-    private int difficulty;
     private String level;
     private Highscore highscore;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
@@ -48,10 +43,10 @@ public class OutcomeActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Bundle b = getIntent().getExtras();
         outcome = b.getInt("outcome");
-        loadScores();
         int minutes = b.getInt("minutes");
         int seconds = b.getInt("seconds");
-        difficulty = b.getInt("difficulty");
+        int difficulty = b.getInt("difficulty");
+        loadScores(difficulty);
         currentLocation = new Location("");
         currentLocation.setLatitude(b.getDouble("latitude"));
         currentLocation.setLongitude(b.getDouble("longitude"));
@@ -126,34 +121,31 @@ public class OutcomeActivity extends AppCompatActivity {
             highscore.setLongitude(currentLocation.getLongitude());
         }
         highscoreList.add(highscore);
-        highscore.setFirebaseKey(highscoresDB.child("Highscores").child(level).child("List").push().getKey());
-        highscoresDB.child("Highscores").child(level).child("List").child(highscore.getFirebaseKey()).setValue(highscore);
+        highscore.setFirebaseKey(highscoresDB.child(HighscoreActivity.FIREBASE_HIGHSCORES_LOCATION).child(level).child(HighscoreActivity.FIREBASE_LIST_LOCATION).push().getKey());
+        highscoresDB.child(HighscoreActivity.FIREBASE_HIGHSCORES_LOCATION).child(level).child(HighscoreActivity.FIREBASE_LIST_LOCATION).child(highscore.getFirebaseKey()).setValue(highscore);
         //  If this highscore isn't the first highscore.
         if (highscoreList.size() > Highscore.MAX_HIGHSCORES) {
             Collections.sort(highscoreList);
             //  Remove the last highscore that isn't a highscore anymore.
-            highscoresDB.child("Highscores").child(level).child("List").child(highscoreList.get(highscoreList.size() - 1).getFirebaseKey()).removeValue();
+            highscoresDB.child(HighscoreActivity.FIREBASE_HIGHSCORES_LOCATION).child(level).child(HighscoreActivity.FIREBASE_LIST_LOCATION).child(highscoreList.get(highscoreList.size() - 1).getFirebaseKey()).removeValue();
             highscoreList.remove(highscoreList.size() - 1);
         }
     }
 
-    public String determineLevel(int level) {
-        switch (level) {
-            case 0:
-                return "Easy";
-            case 1:
-                return "Normal";
-            case 2:
-                return "Hard";
-        }
-        return "";
+    //  Determines the level (so the relevant scores are loaded and updated)
+    public String determineLevel(int difficulty) {
+        LevelFragment.Level level = LevelFragment.Level.Easy;
+        for(LevelFragment.Level tempLevel : LevelFragment.Level.values())
+            if (difficulty == tempLevel.ordinal())
+                level = tempLevel;
+        return level.getValue();
     }
 
     //  Loads high scores from firebase.
-    private void loadScores() {
+    private void loadScores(int difficulty) {
         level = determineLevel(difficulty);
         DatabaseReference highscoresDB = FirebaseDatabase.getInstance().getReference();
-        highscoresDB.child("Highscores").child(level).child("List").addListenerForSingleValueEvent(new ValueEventListener() {
+        highscoresDB.child(HighscoreActivity.FIREBASE_HIGHSCORES_LOCATION).child(level).child(HighscoreActivity.FIREBASE_LIST_LOCATION).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot snap : dataSnapshot.getChildren()) {
@@ -172,7 +164,6 @@ public class OutcomeActivity extends AppCompatActivity {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                Log.d(TAG, "Error loading scores from firebase (onCancalled was called).");
             }
         });
     }

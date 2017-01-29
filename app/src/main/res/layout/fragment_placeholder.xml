@@ -5,11 +5,11 @@
               android:layout_height="wrap_content"
               android:id="@+id/fragment_placeholder_layout">
         <RelativeLayout
-            android:id="@+id/table_relativelayout"
+            android:id="@+id/table_relative_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         <GridLayout
-            android:id="@+id/table_gridlayout"
+            android:id="@+id/table_grid_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/white">

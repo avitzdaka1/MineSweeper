@@ -2,7 +2,6 @@ package com.omeryaari.minesweeper.ui;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,10 +13,8 @@ import android.location.Location;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import android.renderscript.Sampler;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,7 +22,6 @@ import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.GridLayout;
@@ -33,8 +29,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
-import com.google.android.gms.games.Game;
 import com.omeryaari.minesweeper.R;
 import com.omeryaari.minesweeper.logic.EndGameListener;
 import com.omeryaari.minesweeper.logic.MinesUpdateListener;
@@ -49,10 +43,10 @@ import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements TimerChangedListener, RefreshBoardListener, EndGameListener, MinesUpdateListener {
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;     //  Min distance change between updates in the GPS service.
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60;          //  Min time change between updates in the GPS service.
     private static final int TAG_CODE_PERMISSION_LOCATION = 1;
-    private static final String TAG = GameActivity.class.getSimpleName();
+    private static final int ANIMATION_TIME = 1400;                     //  Delay time used in order to display animations before the outcome activity starts.
     private TextView timeText;
     private TextView minesLeftText;
     private ImageButton selectionButton;
@@ -72,6 +66,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         Latitude(37.441082), Longitude(-122.141540);
 
         private double value;
+
         MadeUpLocation(double value) {
             this.value = value;
         }
@@ -103,7 +98,7 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         setContentView(R.layout.activity_game);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         Bundle b = getIntent().getExtras();
-        this.difficulty = b.getInt("key");
+        difficulty = b.getInt("difficulty");
         checkLocationPermissions();
         startAccelerometerService();
         gameLogic = new Logic(difficulty);
@@ -324,20 +319,23 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
                 FrameLayout frame = (FrameLayout) findViewById(R.id.frame_layout);
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(frame.getWidth(), frame.getHeight());
                 animImageView.setLayoutParams(params);
+                //  If the player has lost.
                 if (outcome == Logic.OUTCOME_LOSS) {
                     animImageView.setBackgroundResource(R.drawable.animation_explosion);
                     AnimationDrawable lossAnimation = (AnimationDrawable) animImageView.getBackground();
                     lossAnimation.start();
                     for(int i = 0; i < gameButtons.length; i++) {
                         for(int j = 0; j < gameButtons[0].length; j++) {
-                            animateRandomlyFlyingOut(gameButtons[i][j], 1400);
+                            animateRandomlyFlyingOut(gameButtons[i][j], ANIMATION_TIME);
                         }
                     }
-                } else {
+                }
+                //  If the player has won.
+                else {
                     boardGrid.setVisibility(View.INVISIBLE);
                     animImageView.setBackgroundResource(R.drawable.winner_cup);
                     ObjectAnimator winAnimation = ObjectAnimator.ofFloat(animImageView, "alpha", 0, 1);
-                    winAnimation.setDuration(1400);
+                    winAnimation.setDuration(ANIMATION_TIME);
                     winAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
                     winAnimation.start();
                 }
@@ -363,11 +361,12 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
                         startActivity(intent);
                         finish();
                     }
-                }, 1400);
+                }, ANIMATION_TIME);
             }
         });
     }
 
+    //  Animates the game tiles when player has lost.
     public void animateRandomlyFlyingOut(View view, long duration) {
         Random random = new Random();
         int otherSide;
@@ -385,7 +384,6 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
         ObjectAnimator rotate = ObjectAnimator.ofFloat(view, "rotation", otherSide == 1 ? 0f : 360f, otherSide == 1 ? 360f : 0f);
         rotate.setDuration(duration);
         rotate.setInterpolator(new DecelerateInterpolator());
-
         rotate.start();
         flyOutY.start();
         flyOutX.start();

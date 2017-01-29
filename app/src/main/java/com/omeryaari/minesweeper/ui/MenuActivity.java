@@ -20,10 +20,10 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        ViewPager viewPager = (ViewPager) findViewById(R.id.viewPager);
+        ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         FragmentPagerAdapter adapterViewPager = new MyPagerAdapter(getSupportFragmentManager());
         viewPager.setAdapter(adapterViewPager);
-        ImageButton helpImage = (ImageButton) findViewById(R.id.helpImage);
+        ImageButton helpImage = (ImageButton) findViewById(R.id.help_image);
         helpImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

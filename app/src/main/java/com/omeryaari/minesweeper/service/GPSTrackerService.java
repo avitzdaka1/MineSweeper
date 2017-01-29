@@ -45,6 +45,7 @@ public class GPSTrackerService extends Service implements LocationListener {
 
             }
             else {
+                //  If useNetwork is true, service will also use the location updates from the network the user is connected to.
                 if (useNetwork)
                     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTimeUpdate, minDistanceUpdate, this);
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeUpdate, minDistanceUpdate, this);
@@ -76,6 +77,7 @@ public class GPSTrackerService extends Service implements LocationListener {
         this.locationChangeListener = locationChangeListener;
     }
 
+    //  Sets the initial settings to be used by the service.
     public void setSettings(long minTimeUpdate, float minDistanceUpdate, boolean useNetwork) {
         this.minTimeUpdate = minTimeUpdate;
         this.minDistanceUpdate = minDistanceUpdate;

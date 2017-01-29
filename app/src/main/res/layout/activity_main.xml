@@ -13,7 +13,7 @@
     tools:context="com.omeryaari.minesweeper.ui.MenuActivity">
 
     <ImageButton
-        android:id="@+id/helpImage"
+        android:id="@+id/help_image"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:src="@drawable/question"
@@ -24,17 +24,17 @@
         android:layout_marginBottom="10dp"/>
 
     <ImageView
-        android:id="@+id/titleImage"
+        android:id="@+id/title_image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/minesweeper_logo_400"
-        android:layout_below="@id/helpImage"/>
+        android:layout_below="@id/help_image"/>
 
     <android.support.v4.view.ViewPager
-        android:id="@+id/viewPager"
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titleImage"
+        android:layout_below="@id/title_image"
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true">
 

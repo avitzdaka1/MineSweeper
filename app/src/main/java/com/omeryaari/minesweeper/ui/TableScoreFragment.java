@@ -44,8 +44,8 @@ public class TableScoreFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View mainView = inflater.inflate(R.layout.fragment_placeholder, container, false);
-        tableGrid = (GridLayout) mainView.findViewById(R.id.table_gridlayout);
-        RelativeLayout tableRelativeLayout = (RelativeLayout) mainView.findViewById(R.id.table_relativelayout);
+        tableGrid = (GridLayout) mainView.findViewById(R.id.table_grid_layout);
+        RelativeLayout tableRelativeLayout = (RelativeLayout) mainView.findViewById(R.id.table_relative_layout);
         Display display = getActivity().getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);

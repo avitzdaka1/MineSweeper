@@ -16,11 +16,11 @@ public class MyPagerAdapter extends FragmentPagerAdapter {
     public Fragment getItem(int position) {
         switch(position) {
             case 0:
-                return LevelFragment.newInstance("Easy", 0);
+                return LevelFragment.newInstance(LevelFragment.Level.Easy.ordinal());
             case 1:
-                return LevelFragment.newInstance("Normal", 1);
+                return LevelFragment.newInstance(LevelFragment.Level.Normal.ordinal());
             case 2:
-                return LevelFragment.newInstance("Hard", 2);
+                return LevelFragment.newInstance(LevelFragment.Level.Hard.ordinal());
             default:
                 return null;
         }

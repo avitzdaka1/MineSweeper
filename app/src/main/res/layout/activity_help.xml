@@ -37,7 +37,7 @@
             android:text="@string/help_activity_text1"/>
 
         <ImageView
-            android:id="@+id/mine_imageView"
+            android:id="@+id/mine_image_view"
             android:layout_width="50dp"
             android:layout_height="66dp"
             android:layout_marginTop="10dp"
@@ -63,7 +63,7 @@
             android:text="@string/help_activity_text3"/>
 
         <ImageView
-            android:id="@+id/flag_imageView"
+            android:id="@+id/flag_image_view"
             android:layout_width="50dp"
             android:layout_height="66dp"
             android:src="@drawable/redflag"
@@ -84,7 +84,7 @@
     <Button
         android:id="@+id/return_button"
         android:layout_alignParentBottom="true"
-        android:text="@string/helpReturn"
+        android:text="@string/help_return"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:layout_width="wrap_content"
