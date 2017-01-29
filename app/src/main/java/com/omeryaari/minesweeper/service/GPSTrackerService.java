@@ -14,11 +14,12 @@ import android.support.v4.app.ActivityCompat;
 
 public class GPSTrackerService extends Service implements LocationListener {
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
-    private static final long MIN_TIME_BW_UPDATES = 1000 * 60;
     private Location location;
     private GPSServiceBinder gpsServiceBinder;
     private LocationChangeListener locationChangeListener;
+    private long minTimeUpdate;
+    private float minDistanceUpdate;
+    private boolean useNetwork;
     protected LocationManager locationManager;
 
     public class GPSServiceBinder extends Binder {
@@ -44,8 +45,9 @@ public class GPSTrackerService extends Service implements LocationListener {
 
             }
             else {
-                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, this);
+                if (useNetwork)
+                    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTimeUpdate, minDistanceUpdate, this);
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTimeUpdate, minDistanceUpdate, this);
                 if (locationManager != null) {
                     location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
                     if (location == null)
@@ -72,6 +74,12 @@ public class GPSTrackerService extends Service implements LocationListener {
 
     public void setLocationChangeListener(LocationChangeListener locationChangeListener) {
         this.locationChangeListener = locationChangeListener;
+    }
+
+    public void setSettings(long minTimeUpdate, float minDistanceUpdate, boolean useNetwork) {
+        this.minTimeUpdate = minTimeUpdate;
+        this.minDistanceUpdate = minDistanceUpdate;
+        this.useNetwork = useNetwork;
     }
 
     @Override
