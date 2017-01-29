@@ -49,6 +49,8 @@ import java.util.Random;
 
 public class GameActivity extends AppCompatActivity implements TimerChangedListener, RefreshBoardListener, EndGameListener, MinesUpdateListener {
 
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10;
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60;
     private static final int TAG_CODE_PERMISSION_LOCATION = 1;
     private static final String TAG = GameActivity.class.getSimpleName();
     private TextView timeText;
@@ -139,8 +141,10 @@ public class GameActivity extends AppCompatActivity implements TimerChangedListe
     }
 
     private void startListeningToGps() {
-        if (gpsTrackerService != null)
+        if (gpsTrackerService != null) {
+            gpsTrackerService.setSettings(MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, true);
             gpsTrackerService.startListening();
+        }
     }
 
     private void stopListeningToGps() {
