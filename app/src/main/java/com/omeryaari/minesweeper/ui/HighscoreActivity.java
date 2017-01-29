@@ -57,6 +57,8 @@ public class HighscoreActivity extends AppCompatActivity implements AzimutServic
 
     private static final int TAG_CODE_PERMISSION_LOCATION = 2;
     private static final float MAP_ZOOM_DEFAULT = 7.0f;
+    private static final long MIN_TIME_BW_UPDATES = 500;
+    private static final float MIN_DISTANCE_CHANGE_FOR_UPDATES = 1;
     private String level;
     private Fragment tableFragment;
     private ArrayList<Highscore> highscoreList = new ArrayList<>();
@@ -316,8 +318,10 @@ public class HighscoreActivity extends AppCompatActivity implements AzimutServic
     }
 
     private void startListeningToGps() {
-        if (gpsTrackerService != null)
+        if (gpsTrackerService != null) {
+            gpsTrackerService.setSettings(MIN_TIME_BW_UPDATES, MIN_DISTANCE_CHANGE_FOR_UPDATES, false);
             gpsTrackerService.startListening();
+        }
     }
 
     private void stopListeningToGps() {
